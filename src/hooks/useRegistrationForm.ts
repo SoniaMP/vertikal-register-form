@@ -4,24 +4,21 @@
  */
 
 import { useReducer, useCallback, useMemo } from "react";
-import { type RenewalData } from "../services/usuariosService";
 import {
   type CheckoutData,
   type RegistrationFormData,
   INITIAL_FORM_DATA,
 } from "../types";
-import { AppMode, FederationType, Step, ViewState } from "../types/enums";
+import { FederationType, Step, ViewState } from "../types/enums";
 
 // ============================================================================
 // State Type
 // ============================================================================
 
 export interface RegistrationState {
-  mode: AppMode;
   view: ViewState;
   step: Step;
   formData: RegistrationFormData;
-  renewalData: RenewalData | null;
   checkoutData: CheckoutData | null;
   selectedOption: string;
   selectedComplements: Record<string, boolean>;
@@ -31,11 +28,9 @@ export interface RegistrationState {
 }
 
 const initialState: RegistrationState = {
-  mode: AppMode.INITIAL,
   view: ViewState.FORM,
   step: Step.PERSONAL_DATA,
   formData: INITIAL_FORM_DATA,
-  renewalData: null,
   checkoutData: null,
   selectedOption: "",
   selectedComplements: {},
@@ -50,7 +45,6 @@ const initialState: RegistrationState = {
 
 type RegistrationAction =
   | { type: "RESET" }
-  | { type: "SET_MODE"; payload: AppMode }
   | { type: "SET_VIEW"; payload: ViewState }
   | { type: "SET_STEP"; payload: Step }
   | { type: "UPDATE_FORM_FIELD"; payload: { name: string; value: string } }
@@ -60,10 +54,6 @@ type RegistrationAction =
   | { type: "SET_COMPLEMENT"; payload: { key: string; checked: boolean } }
   | { type: "SET_PRINT_PHYSICAL_CARD"; payload: boolean }
   | { type: "SET_CHECKOUT_DATA"; payload: CheckoutData }
-  | { type: "START_NEW_REGISTRATION" }
-  | { type: "START_RENEWAL_LOOKUP" }
-  | { type: "BACK_TO_INITIAL" }
-  | { type: "USER_FOUND"; payload: RenewalData }
   | { type: "NEXT_STEP" }
   | { type: "PREV_STEP" }
   | { type: "GO_TO_CHECKOUT"; payload: CheckoutData }
@@ -81,9 +71,6 @@ function registrationReducer(
   switch (action.type) {
     case "RESET":
       return initialState;
-
-    case "SET_MODE":
-      return { ...state, mode: action.payload };
 
     case "SET_VIEW":
       return { ...state, view: action.payload };
@@ -123,42 +110,6 @@ function registrationReducer(
 
     case "SET_CHECKOUT_DATA":
       return { ...state, checkoutData: action.payload };
-
-    case "START_NEW_REGISTRATION":
-      return {
-        ...initialState,
-        mode: AppMode.NEW,
-        view: ViewState.FORM,
-      };
-
-    case "START_RENEWAL_LOOKUP":
-      return { ...state, mode: AppMode.DNI_LOOKUP };
-
-    case "BACK_TO_INITIAL":
-      return {
-        ...state,
-        mode: AppMode.INITIAL,
-        step: Step.PERSONAL_DATA,
-        renewalData: null,
-      };
-
-    case "USER_FOUND": {
-      const { usuario, federado } = action.payload;
-      return {
-        ...state,
-        mode: AppMode.RENEWAL,
-        step: Step.SUMMARY,
-        renewalData: action.payload,
-        formData: {
-          ...usuario,
-          licenseType: federado?.licenseType || "",
-        },
-        selectedOption: federado?.licenseType || "",
-        selectedComplements: federado?.selectedComplements || {},
-        printPhysicalCard: federado?.printPhysicalCard || false,
-        dataProtectionAccepted: true,
-      };
-    }
 
     case "NEXT_STEP": {
       // If already federated, skip directly to step 3
@@ -232,15 +183,6 @@ export function useRegistrationForm() {
       setPrintPhysicalCard: (print: boolean) =>
         dispatch({ type: "SET_PRINT_PHYSICAL_CARD", payload: print }),
 
-      startNewRegistration: () => dispatch({ type: "START_NEW_REGISTRATION" }),
-
-      startRenewalLookup: () => dispatch({ type: "START_RENEWAL_LOOKUP" }),
-
-      backToInitial: () => dispatch({ type: "BACK_TO_INITIAL" }),
-
-      userFound: (data: RenewalData) =>
-        dispatch({ type: "USER_FOUND", payload: data }),
-
       nextStep: () => dispatch({ type: "NEXT_STEP" }),
 
       prevStep: () => dispatch({ type: "PREV_STEP" }),
@@ -271,22 +213,6 @@ export function useRegistrationForm() {
       },
       [actions]
     ),
-
-    handleStep1Back: useCallback(() => {
-      if (state.mode === AppMode.RENEWAL) {
-        actions.setStep(Step.SUMMARY);
-      } else {
-        actions.backToInitial();
-      }
-    }, [state.mode, actions]),
-
-    handleStep3Back: useCallback(() => {
-      if (state.mode === AppMode.RENEWAL) {
-        actions.backToInitial();
-      } else {
-        actions.prevStep();
-      }
-    }, [state.mode, actions]),
   };
 
   return {

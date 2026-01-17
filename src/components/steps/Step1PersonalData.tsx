@@ -26,7 +26,6 @@ interface Step1PersonalDataProps {
   onDataProtectionChange: (checked: boolean) => void;
   onImageRightsChange: (checked: boolean) => void;
   onNext: (e: React.FormEvent) => void;
-  onBack: () => void;
 }
 
 function Step1PersonalDataComponent({
@@ -37,7 +36,6 @@ function Step1PersonalDataComponent({
   onDataProtectionChange,
   onImageRightsChange,
   onNext,
-  onBack,
 }: Step1PersonalDataProps) {
   return (
     <form onSubmit={onNext}>
@@ -148,20 +146,15 @@ function Step1PersonalDataComponent({
           onImageRightsChange={onImageRightsChange}
         />
 
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="outlined" size="large" onClick={onBack} fullWidth>
-            Volver
-          </Button>
-          <Button
-            type="submit"
-            variant="contained"
-            size="large"
-            disabled={!dataProtectionAccepted}
-            fullWidth
-          >
-            Siguiente
-          </Button>
-        </Box>
+        <Button
+          type="submit"
+          variant="contained"
+          size="large"
+          disabled={!dataProtectionAccepted}
+          fullWidth
+        >
+          Siguiente
+        </Button>
       </Box>
     </form>
   );

@@ -1,8 +1,6 @@
-import { Typography, Box, Paper, Alert } from "@mui/material";
+import { Typography, Box, Paper } from "@mui/material";
 import StripeCheckoutMock from "../components/StripeCheckoutMock";
 import PaymentSuccess from "../components/PaymentSuccess";
-import InitialChoice from "../components/InitialChoice";
-import DNILookup from "../components/DNILookup";
 import {
   Step1PersonalData,
   Step2LicenseSelection,
@@ -10,18 +8,16 @@ import {
 } from "../components/steps";
 import { licenseConfig } from "../config/licenseConfig";
 import { useRegistrationForm } from "../hooks/useRegistrationForm";
-import { AppMode, FederationType, Step, ViewState } from "../types/enums";
+import { FederationType, Step, ViewState } from "../types/enums";
 import { stepTitles } from "../i18n";
 
 function Home() {
   const { state, actions, handlers } = useRegistrationForm();
 
   const {
-    mode,
     view,
     step,
     formData,
-    renewalData,
     checkoutData,
     selectedOption,
     selectedComplements,
@@ -72,56 +68,12 @@ function Home() {
     );
   }
 
-  // Initial choice view
-  if (mode === AppMode.INITIAL) {
-    return (
-      <Box>
-        <InitialChoice
-          onNewRegistration={actions.startNewRegistration}
-          onRenewal={actions.startRenewalLookup}
-        />
-      </Box>
-    );
-  }
-
-  // DNI lookup view
-  if (mode === AppMode.DNI_LOOKUP) {
-    return (
-      <Box>
-        <DNILookup
-          onUserFound={actions.userFound}
-          onBack={actions.backToInitial}
-          onNewRegistration={actions.startNewRegistration}
-        />
-      </Box>
-    );
-  }
-
-  // Form view (for both "new" and "renewal" modes)
+  // Form view
   return (
     <Box>
       <Paper elevation={3} sx={{ p: 4, mt: 3, maxWidth: 600, mx: "auto" }}>
-        {mode === AppMode.RENEWAL && renewalData && (
-          <Alert severity="info" sx={{ mb: 3 }}>
-            <Typography variant="body2">
-              <strong>
-                Renovación de licencia para {renewalData.anioHabil}
-              </strong>
-            </Typography>
-            <Typography variant="body2">
-              Hemos cargado tus datos del año anterior. Por favor, revisa que
-              todo esté correcto antes de continuar con el pago.
-            </Typography>
-            {renewalData.federado?.numeroLicencia && (
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                Licencia anterior: {renewalData.federado.numeroLicencia}
-              </Typography>
-            )}
-          </Alert>
-        )}
-
         <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-          Paso {step}: {getStepTitle()}
+          {getStepTitle()}
         </Typography>
 
         {step === Step.PERSONAL_DATA && (
@@ -133,7 +85,6 @@ function Home() {
             onDataProtectionChange={actions.setDataProtection}
             onImageRightsChange={actions.setImageRights}
             onNext={handlers.handleNextStep}
-            onBack={handlers.handleStep1Back}
           />
         )}
 
@@ -157,10 +108,8 @@ function Home() {
             selectedOption={selectedOption}
             printPhysicalCard={printPhysicalCard}
             selectedComplements={selectedComplements}
-            mode={mode}
-            onEditPersonalData={() => actions.setStep(Step.PERSONAL_DATA)}
             onSubmit={actions.goToCheckout}
-            onBack={handlers.handleStep3Back}
+            onBack={actions.prevStep}
           />
         )}
       </Paper>

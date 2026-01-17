@@ -28,18 +28,6 @@ export type FederationType =
   (typeof FederationType)[keyof typeof FederationType];
 
 /**
- * Application mode states
- */
-export const AppMode = {
-  INITIAL: "initial",
-  DNI_LOOKUP: "dniLookup",
-  RENEWAL: "renewal",
-  NEW: "new",
-} as const;
-
-export type AppMode = (typeof AppMode)[keyof typeof AppMode];
-
-/**
  * View states for the form flow
  */
 export const ViewState = {

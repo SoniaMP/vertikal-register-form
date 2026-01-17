@@ -7,7 +7,7 @@ export type {
   ComplementConfig,
 } from "./interfaces";
 
-export { FederationType, AppMode, Step, ViewState, Sex } from "./enums";
+export { FederationType, Step, ViewState, Sex } from "./enums";
 export type { FederationType as FederationTypeValue } from "./enums";
 
 import type { FormData } from "./interfaces";

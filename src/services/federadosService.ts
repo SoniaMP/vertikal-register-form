@@ -4,7 +4,7 @@
  */
 
 import { api, type ApiResponse } from "./api";
-import type { Usuario, UsuarioInput, Federado } from "./usuariosService";
+import type { Usuario, UsuarioInput, Federado } from "./database";
 
 // Types
 export interface FederadoInput {
@@ -130,4 +130,4 @@ export const federadosService = {
 };
 
 // Re-export types
-export type { Federado } from "./usuariosService";
+export type { Federado } from "./database";

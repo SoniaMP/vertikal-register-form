@@ -257,19 +257,6 @@ export const federadosDB = {
 };
 
 /**
- * Combined query to get user with their federation data
- */
-export async function getUsuarioConFederacion(
-  dni: string
-): Promise<{ usuario: Usuario; federado: Federado | null } | null> {
-  const usuario = await usuariosDB.getByDNI(dni);
-  if (!usuario) return null;
-
-  const federado = await federadosDB.getLatestByDNI(dni);
-  return { usuario, federado };
-}
-
-/**
  * Generate a new license number
  */
 export function generateLicenseNumber(federation: string, anio: number): string {

@@ -193,15 +193,6 @@ class MockDatabase {
     return this.federados.filter((f) => f.dni.toUpperCase() === normalizedDNI);
   }
 
-  getLatestFederadoByDNI(dni: string): Federado | null {
-    const normalizedDNI = dni.toUpperCase().trim();
-    const userFederados = this.federados
-      .filter((f) => f.dni.toUpperCase() === normalizedDNI)
-      .sort((a, b) => b.anioVigente - a.anioVigente);
-
-    return userFederados[0] || null;
-  }
-
   createFederado(data: FederadoInput): Federado {
     const newFederado: Federado = {
       ...data,
@@ -231,15 +222,6 @@ class MockDatabase {
     return this.federados.some(
       (f) => f.dni.toUpperCase() === normalizedDNI && f.anioVigente === anio
     );
-  }
-
-  // Combined query
-  getUsuarioConFederacion(dni: string): { usuario: Usuario; federado: Federado | null } | null {
-    const usuario = this.getUsuarioByDNI(dni);
-    if (!usuario) return null;
-
-    const federado = this.getLatestFederadoByDNI(dni);
-    return { usuario, federado };
   }
 
   // Generate license number

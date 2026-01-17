@@ -6,7 +6,6 @@
 import {
   usuariosDB,
   federadosDB,
-  getUsuarioConFederacion,
   generateLicenseNumber,
   getAnioHabil,
   type Usuario,
@@ -22,14 +21,6 @@ interface ApiResponse<T> {
   error?: string;
 }
 
-interface RenewalData {
-  usuario: Usuario;
-  federado: Federado | null;
-  anioHabil: number;
-  canRenew: boolean;
-  message?: string;
-}
-
 // Simulate network delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -37,46 +28,6 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  * Mock API Server
  */
 export const apiMock = {
-  /**
-   * GET /api/usuarios/:dni
-   * Fetch user by DNI for renewal process
-   */
-  async getUsuarioByDNI(dni: string): Promise<ApiResponse<RenewalData>> {
-    await delay(300);
-
-    try {
-      const result = await getUsuarioConFederacion(dni);
-
-      if (!result) {
-        return {
-          success: false,
-          error: "No se encontró ningún usuario con ese DNI en nuestro sistema.",
-        };
-      }
-
-      const anioHabil = getAnioHabil();
-      const alreadyRenewed = await federadosDB.existsForYear(dni, anioHabil);
-
-      return {
-        success: true,
-        data: {
-          usuario: result.usuario,
-          federado: result.federado,
-          anioHabil,
-          canRenew: !alreadyRenewed,
-          message: alreadyRenewed
-            ? `Ya tienes una licencia registrada para el año ${anioHabil}.`
-            : undefined,
-        },
-      };
-    } catch {
-      return {
-        success: false,
-        error: "Error al buscar el usuario. Por favor, inténtalo de nuevo.",
-      };
-    }
-  },
-
   /**
    * POST /api/usuarios
    * Create a new user
@@ -316,4 +267,4 @@ export const apiMock = {
   getAnioHabil,
 };
 
-export type { ApiResponse, RenewalData };
+export type { ApiResponse };

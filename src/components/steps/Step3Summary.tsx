@@ -6,7 +6,6 @@
 import { memo, useState, useEffect } from "react";
 import { Box, Button, Typography, CircularProgress } from "@mui/material";
 import type { RegistrationFormData, CheckoutData } from "../../types";
-import { AppMode } from "../../types/enums";
 import { stripeService } from "../../services/stripeService";
 import {
   isAlreadyFederated,
@@ -23,8 +22,6 @@ interface Step3SummaryProps {
   selectedOption: string;
   printPhysicalCard: boolean;
   selectedComplements: Record<string, boolean>;
-  mode: AppMode;
-  onEditPersonalData: () => void;
   onSubmit: (checkoutData: CheckoutData) => void;
   onBack: () => void;
 }
@@ -34,8 +31,6 @@ function Step3SummaryComponent({
   selectedOption,
   printPhysicalCard,
   selectedComplements,
-  mode,
-  onEditPersonalData,
   onSubmit,
   onBack,
 }: Step3SummaryProps) {
@@ -107,11 +102,7 @@ function Step3SummaryComponent({
           Resumen de tu solicitud
         </Typography>
 
-        <PersonalDataSummary
-          formData={formData}
-          mode={mode}
-          onEditPersonalData={onEditPersonalData}
-        />
+        <PersonalDataSummary formData={formData} />
 
         {alreadyFederated ? (
           <AlreadyFederatedSummary />
@@ -145,7 +136,7 @@ function Step3SummaryComponent({
 
         <Box sx={{ display: "flex", gap: 2 }}>
           <Button variant="outlined" size="large" onClick={onBack} fullWidth>
-            {mode === AppMode.RENEWAL ? "Cancelar" : "Volver"}
+            Volver
           </Button>
           <Button
             type="submit"
@@ -164,36 +155,16 @@ function Step3SummaryComponent({
 
 interface PersonalDataSummaryProps {
   formData: RegistrationFormData;
-  mode: AppMode;
-  onEditPersonalData: () => void;
 }
 
 const PersonalDataSummary = memo(function PersonalDataSummary({
   formData,
-  mode,
-  onEditPersonalData,
 }: PersonalDataSummaryProps) {
-  const isRenewal = mode === AppMode.RENEWAL;
-
   return (
     <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 2,
-        }}
-      >
-        <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-          Datos personales
-        </Typography>
-        {isRenewal && (
-          <Button size="small" onClick={onEditPersonalData}>
-            Editar datos
-          </Button>
-        )}
-      </Box>
+      <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 2 }}>
+        Datos personales
+      </Typography>
       <Typography variant="body2">
         <strong>Nombre:</strong> {formData.fullName}
       </Typography>
@@ -206,25 +177,6 @@ const PersonalDataSummary = memo(function PersonalDataSummary({
       <Typography variant="body2">
         <strong>Teléfono:</strong> {formData.phone}
       </Typography>
-      {isRenewal && (
-        <>
-          <Typography variant="body2">
-            <strong>Dirección:</strong> {formData.address}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Código postal:</strong> {formData.postalCode}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Población:</strong> {formData.city}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Fecha de nacimiento:</strong> {formData.birthDate}
-          </Typography>
-          <Typography variant="body2">
-            <strong>Sexo:</strong> {formData.sex}
-          </Typography>
-        </>
-      )}
     </Box>
   );
 });

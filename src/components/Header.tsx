@@ -1,7 +1,7 @@
 import { AppBar, Toolbar, Typography, Box, Container } from "@mui/material";
 import vertikalLOGO from "../assets/vertikal-logo-blanco-horizontal.png";
 
-function Header() {
+const Header = () => {
   return (
     <AppBar position="fixed">
       <Container maxWidth="lg">
@@ -22,6 +22,6 @@ function Header() {
       </Container>
     </AppBar>
   );
-}
+};
 
 export default Header;

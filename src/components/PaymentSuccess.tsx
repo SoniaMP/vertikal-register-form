@@ -9,7 +9,7 @@ interface PaymentSuccessProps {
   onReset: () => void;
 }
 
-function PaymentSuccess({ orderData, onReset }: PaymentSuccessProps) {
+const PaymentSuccess = ({ orderData, onReset }: PaymentSuccessProps) => {
   return (
     <Paper elevation={3} sx={{ p: 4, mt: 3, maxWidth: 600, mx: "auto" }}>
       <Box
@@ -123,6 +123,6 @@ function PaymentSuccess({ orderData, onReset }: PaymentSuccessProps) {
       </Box>
     </Paper>
   );
-}
+};
 
 export default PaymentSuccess;

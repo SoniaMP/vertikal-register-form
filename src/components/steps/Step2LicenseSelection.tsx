@@ -30,7 +30,7 @@ interface Step2LicenseSelectionProps {
   onBack: () => void;
 }
 
-function Step2LicenseSelectionComponent({
+const Step2LicenseSelectionComponent = ({
   licenseType,
   selectedOption,
   printPhysicalCard,
@@ -40,7 +40,7 @@ function Step2LicenseSelectionComponent({
   onComplementChange,
   onNext,
   onBack,
-}: Step2LicenseSelectionProps) {
+}: Step2LicenseSelectionProps) => {
   if (!licenseType || licenseType === FederationType.ALREADY_FEDERATED) {
     return null;
   }
@@ -120,7 +120,7 @@ function Step2LicenseSelectionComponent({
       </Box>
     </form>
   );
-}
+};
 
 interface ComplementsSectionProps {
   licenseType: string;
@@ -150,25 +150,27 @@ const ComplementsSection = memo(function ComplementsSection({
         )}
       </Typography>
       <Box sx={{ mt: 1 }}>
-        {config.complements.map((complement: { key: string; label: string; price?: number }) => (
-          <FormControlLabel
-            key={complement.key}
-            control={
-              <Checkbox
-                checked={selectedComplements[complement.key] || false}
-                onChange={(e) =>
-                  onComplementChange(complement.key, e.target.checked)
-                }
-              />
-            }
-            label={
-              complement.price
-                ? `${complement.label} (+${complement.price}€)`
-                : complement.label
-            }
-            sx={{ display: "block" }}
-          />
-        ))}
+        {config.complements.map(
+          (complement: { key: string; label: string; price?: number }) => (
+            <FormControlLabel
+              key={complement.key}
+              control={
+                <Checkbox
+                  checked={selectedComplements[complement.key] || false}
+                  onChange={(e) =>
+                    onComplementChange(complement.key, e.target.checked)
+                  }
+                />
+              }
+              label={
+                complement.price
+                  ? `${complement.label} (+${complement.price}€)`
+                  : complement.label
+              }
+              sx={{ display: "block" }}
+            />
+          ),
+        )}
       </Box>
     </Box>
   );

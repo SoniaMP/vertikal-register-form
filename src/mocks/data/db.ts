@@ -34,13 +34,13 @@ export type UsuarioInput = Omit<Usuario, "id" | "createdAt" | "updatedAt">;
 export type FederadoInput = Omit<Federado, "id">;
 
 // Calculate current valid year for federation
-export function getAnioHabil(): number {
+export function getCurrentYear(): number {
   const now = new Date();
   const month = now.getMonth() + 1;
   const year = now.getFullYear();
 
-  // If we're in October-December, licenses are for next year
-  if (month >= 10) {
+  // If we're in November-December, licenses are for next year
+  if (month >= 11) {
     return year + 1;
   }
   return year;
@@ -135,7 +135,9 @@ class MockDatabase {
   // Usuario operations
   getUsuarioByDNI(dni: string): Usuario | null {
     const normalizedDNI = dni.toUpperCase().trim();
-    return this.usuarios.find((u) => u.dni.toUpperCase() === normalizedDNI) || null;
+    return (
+      this.usuarios.find((u) => u.dni.toUpperCase() === normalizedDNI) || null
+    );
   }
 
   getAllUsuarios(): Usuario[] {
@@ -157,7 +159,9 @@ class MockDatabase {
 
   updateUsuario(dni: string, data: Partial<UsuarioInput>): Usuario | null {
     const normalizedDNI = dni.toUpperCase().trim();
-    const index = this.usuarios.findIndex((u) => u.dni.toUpperCase() === normalizedDNI);
+    const index = this.usuarios.findIndex(
+      (u) => u.dni.toUpperCase() === normalizedDNI,
+    );
     if (index === -1) return null;
 
     this.usuarios[index] = {
@@ -170,7 +174,9 @@ class MockDatabase {
 
   deleteUsuario(dni: string): boolean {
     const normalizedDNI = dni.toUpperCase().trim();
-    const index = this.usuarios.findIndex((u) => u.dni.toUpperCase() === normalizedDNI);
+    const index = this.usuarios.findIndex(
+      (u) => u.dni.toUpperCase() === normalizedDNI,
+    );
     if (index === -1) return false;
     this.usuarios.splice(index, 1);
     return true;
@@ -179,11 +185,12 @@ class MockDatabase {
   // Federado operations
   getFederadoByDNI(dni: string, anio?: number): Federado | null {
     const normalizedDNI = dni.toUpperCase().trim();
-    const targetAnio = anio || getAnioHabil();
+    const targetAnio = anio || getCurrentYear();
 
     return (
       this.federados.find(
-        (f) => f.dni.toUpperCase() === normalizedDNI && f.anioVigente === targetAnio
+        (f) =>
+          f.dni.toUpperCase() === normalizedDNI && f.anioVigente === targetAnio,
       ) || null
     );
   }
@@ -203,10 +210,14 @@ class MockDatabase {
     return newFederado;
   }
 
-  updateFederado(dni: string, anio: number, data: Partial<FederadoInput>): Federado | null {
+  updateFederado(
+    dni: string,
+    anio: number,
+    data: Partial<FederadoInput>,
+  ): Federado | null {
     const normalizedDNI = dni.toUpperCase().trim();
     const index = this.federados.findIndex(
-      (f) => f.dni.toUpperCase() === normalizedDNI && f.anioVigente === anio
+      (f) => f.dni.toUpperCase() === normalizedDNI && f.anioVigente === anio,
     );
     if (index === -1) return null;
 
@@ -220,14 +231,14 @@ class MockDatabase {
   existsFederadoForYear(dni: string, anio: number): boolean {
     const normalizedDNI = dni.toUpperCase().trim();
     return this.federados.some(
-      (f) => f.dni.toUpperCase() === normalizedDNI && f.anioVigente === anio
+      (f) => f.dni.toUpperCase() === normalizedDNI && f.anioVigente === anio,
     );
   }
 
   // Generate license number
   generateLicenseNumber(federation: string, anio: number): string {
     const count = this.federados.filter(
-      (f) => f.federation === federation && f.anioVigente === anio
+      (f) => f.federation === federation && f.anioVigente === anio,
     ).length;
     const paddedCount = String(count + 1).padStart(4, "0");
     return `${federation}-${anio}-${paddedCount}`;

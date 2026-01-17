@@ -3,7 +3,12 @@
  */
 
 import { http, HttpResponse, delay } from "msw";
-import { db, getAnioHabil, type FederadoInput, type UsuarioInput } from "../data/db";
+import {
+  db,
+  getCurrentYear,
+  type FederadoInput,
+  type UsuarioInput,
+} from "../data/db";
 
 const API_BASE = "/api";
 
@@ -34,7 +39,7 @@ export const federadosHandlers = [
           success: false,
           error: `No hay registro de federación para el año ${anio}.`,
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -48,7 +53,9 @@ export const federadosHandlers = [
   http.post(`${API_BASE}/federados`, async ({ request }) => {
     await delay(400);
 
-    const data = (await request.json()) as FederadoInput & { generateLicense?: boolean };
+    const data = (await request.json()) as FederadoInput & {
+      generateLicense?: boolean;
+    };
 
     // Check if already federated for this year
     const existing = db.existsFederadoForYear(data.dni, data.anioVigente);
@@ -58,7 +65,7 @@ export const federadosHandlers = [
           success: false,
           error: `Ya existe una licencia para el año ${data.anioVigente}.`,
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -83,7 +90,7 @@ export const federadosHandlers = [
         success: true,
         data: federado,
       },
-      { status: 201 }
+      { status: 201 },
     );
   }),
 
@@ -101,7 +108,7 @@ export const federadosHandlers = [
           success: false,
           error: "Federado no encontrado.",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -125,7 +132,7 @@ export const federadosHandlers = [
       };
     };
 
-    const anioHabil = getAnioHabil();
+    const anioHabil = getCurrentYear();
 
     // Check if user exists
     let usuario = db.getUsuarioByDNI(data.usuario.dni);
@@ -142,19 +149,25 @@ export const federadosHandlers = [
     }
 
     // Check if already federated for this year
-    const existingFederado = db.existsFederadoForYear(data.usuario.dni, anioHabil);
+    const existingFederado = db.existsFederadoForYear(
+      data.usuario.dni,
+      anioHabil,
+    );
     if (existingFederado) {
       return HttpResponse.json(
         {
           success: false,
           error: `Ya tienes una licencia registrada para el año ${anioHabil}.`,
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     // Create federation record
-    const numeroLicencia = db.generateLicenseNumber(data.federacion.federation, anioHabil);
+    const numeroLicencia = db.generateLicenseNumber(
+      data.federacion.federation,
+      anioHabil,
+    );
     const federado = db.createFederado({
       dni: data.usuario.dni,
       anioVigente: anioHabil,
@@ -170,7 +183,7 @@ export const federadosHandlers = [
         success: true,
         data: { usuario, federado, isNewUser },
       },
-      { status: 201 }
+      { status: 201 },
     );
   }),
 
@@ -180,7 +193,7 @@ export const federadosHandlers = [
 
     return HttpResponse.json({
       success: true,
-      data: { anioHabil: getAnioHabil() },
+      data: { anioHabil: getCurrentYear() },
     });
   }),
 ];

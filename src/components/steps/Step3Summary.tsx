@@ -26,14 +26,14 @@ interface Step3SummaryProps {
   onBack: () => void;
 }
 
-function Step3SummaryComponent({
+const Step3SummaryComponent = ({
   formData,
   selectedOption,
   printPhysicalCard,
   selectedComplements,
   onSubmit,
   onBack,
-}: Step3SummaryProps) {
+}: Step3SummaryProps) => {
   const [price, setPrice] = useState<number | null>(null);
   const [loadingPrice, setLoadingPrice] = useState(false);
 
@@ -42,13 +42,13 @@ function Step3SummaryComponent({
   const physicalCardPrice = getPhysicalCardPrice(formData.licenseType);
   const complementsTotal = getComplementsTotal(
     formData.licenseType,
-    selectedComplements
+    selectedComplements,
   );
   const totalPrice = calculateTotalPrice(
     formData.licenseType,
     price,
     printPhysicalCard,
-    selectedComplements
+    selectedComplements,
   );
 
   // Fetch price only when this component mounts or selectedOption changes
@@ -61,9 +61,8 @@ function Step3SummaryComponent({
 
     const fetchPrice = async () => {
       setLoadingPrice(true);
-      const calculatedPrice = await stripeService.getPriceForLicense(
-        selectedOption
-      );
+      const calculatedPrice =
+        await stripeService.getPriceForLicense(selectedOption);
       if (!cancelled) {
         setPrice(calculatedPrice);
         setLoadingPrice(false);
@@ -151,7 +150,7 @@ function Step3SummaryComponent({
       </Box>
     </form>
   );
-}
+};
 
 interface PersonalDataSummaryProps {
   formData: RegistrationFormData;
@@ -212,12 +211,12 @@ const LicenseSummary = memo(function LicenseSummary({
 }: LicenseSummaryProps) {
   const optionLabel = getSelectedOptionLabel(
     formData.licenseType,
-    selectedOption
+    selectedOption,
   );
   const physicalCardPrice = getPhysicalCardPrice(formData.licenseType);
   const complementsDisplay = formatComplementsForDisplay(
     formData.licenseType,
-    selectedComplements
+    selectedComplements,
   );
 
   return (

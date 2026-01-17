@@ -28,7 +28,7 @@ interface Step1PersonalDataProps {
   onNext: (e: React.FormEvent) => void;
 }
 
-function Step1PersonalDataComponent({
+const Step1PersonalDataComponent = ({
   formData,
   dataProtectionAccepted,
   imageRightsAccepted,
@@ -36,7 +36,7 @@ function Step1PersonalDataComponent({
   onDataProtectionChange,
   onImageRightsChange,
   onNext,
-}: Step1PersonalDataProps) {
+}: Step1PersonalDataProps) => {
   return (
     <form onSubmit={onNext}>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -158,7 +158,7 @@ function Step1PersonalDataComponent({
       </Box>
     </form>
   );
-}
+};
 
 interface DataProtectionSectionProps {
   dataProtectionAccepted: boolean;

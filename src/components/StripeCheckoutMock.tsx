@@ -27,11 +27,11 @@ interface StripeCheckoutMockProps {
   onCancel: () => void;
 }
 
-function StripeCheckoutMock({
+const StripeCheckoutMock = ({
   checkoutData,
   onSuccess,
   onCancel,
-}: StripeCheckoutMockProps) {
+}: StripeCheckoutMockProps) => {
   const [cardNumber, setCardNumber] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
@@ -49,7 +49,9 @@ function StripeCheckoutMock({
     onSuccess();
   };
 
-  const cardSupplement = checkoutData.printPhysicalCard ? checkoutData.physicalCardPrice : 0;
+  const cardSupplement = checkoutData.printPhysicalCard
+    ? checkoutData.physicalCardPrice
+    : 0;
   const complementsTotal = checkoutData.complementsTotal;
 
   return (
@@ -203,6 +205,6 @@ function StripeCheckoutMock({
       </form>
     </Paper>
   );
-}
+};
 
 export default StripeCheckoutMock;

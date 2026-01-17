@@ -1,6 +1,6 @@
-import { Box, Typography } from "@mui/material";
+import { Box, Container, Stack, Typography } from "@mui/material";
 
-function Footer() {
+const Footer = () => {
   return (
     <Box
       component="footer"
@@ -15,11 +15,27 @@ function Footer() {
         zIndex: 1100,
       }}
     >
-      <Typography variant="body2" color="white">
-        Club Vertikal 2026
-      </Typography>
+      <Container maxWidth="lg">
+        <Stack
+          direction="row"
+          justifyContent="center"
+          spacing={2}
+          mb={1}
+          alignItems="center"
+        >
+          <Typography variant="body2" color="white">
+            © 2026 Club VERTIKAL
+          </Typography>
+          <Typography variant="body2" color="white">
+            ·
+          </Typography>
+          <Typography variant="body2" color="white">
+            Todos los derechos reservados
+          </Typography>
+        </Stack>
+      </Container>
     </Box>
   );
-}
+};
 
 export default Footer;

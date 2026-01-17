@@ -1,14 +1,10 @@
 /**
  * Utility functions for license-related calculations and operations
- * Uses static licenseConfig for all federation data
+ * All functions receive federation config as a parameter
  */
 
 import { FederationType } from "../types/enums";
-import { hasFixedComplementPrice, type LicenseConfig } from "../types";
-import { licenseConfig } from "../config/licenseConfig";
-
-// Club fee constant - in production this would come from config
-const CLUB_FEE = 20;
+import type { FederationConfig } from "../services/configService";
 
 /**
  * Check if the user is already federated
@@ -18,22 +14,9 @@ export function isAlreadyFederated(licenseType: string): boolean {
 }
 
 /**
- * Get license config for a federation type
+ * Get the physical card price from config
  */
-export function getLicenseConfigForType(
-  licenseType: string
-): LicenseConfig | null {
-  if (!licenseType || isAlreadyFederated(licenseType)) {
-    return null;
-  }
-  return licenseConfig[licenseType as keyof typeof licenseConfig] || null;
-}
-
-/**
- * Get the physical card price for a federation type
- */
-export function getPhysicalCardPrice(licenseType: string): number {
-  const config = getLicenseConfigForType(licenseType);
+export function getPhysicalCardPrice(config: FederationConfig | null): number {
   return config?.physicalCardPrice || 0;
 }
 
@@ -41,18 +24,17 @@ export function getPhysicalCardPrice(licenseType: string): number {
  * Calculate the total price for selected complements
  */
 export function getComplementsTotal(
-  licenseType: string,
+  config: FederationConfig | null,
   selectedComplements: Record<string, boolean>
 ): number {
-  const config = getLicenseConfigForType(licenseType);
   if (!config) return 0;
 
   // If has fixed complement price, charge only if any complement is selected
-  if (hasFixedComplementPrice(config)) {
+  if (config.complementsFixedPrice !== undefined) {
     const hasAnyComplement = config.complements.some(
       (complement) => selectedComplements[complement.key]
     );
-    return hasAnyComplement ? config.complementsFixedPrice! : 0;
+    return hasAnyComplement ? config.complementsFixedPrice : 0;
   }
 
   // For other types, sum the price of each selected complement
@@ -68,21 +50,12 @@ export function getComplementsTotal(
  * Get the label for a selected license option
  */
 export function getSelectedOptionLabel(
-  licenseType: string,
+  config: FederationConfig | null,
   selectedOption: string
 ): string {
-  if (!licenseType || !selectedOption) return "";
-  const config = getLicenseConfigForType(licenseType);
-  if (!config) return "";
+  if (!config || !selectedOption) return "";
   const option = config.options.find((opt) => opt.value === selectedOption);
   return option?.label || selectedOption;
-}
-
-/**
- * Get the club fee
- */
-export function getClubFee(): number {
-  return CLUB_FEE;
 }
 
 /**
@@ -90,12 +63,12 @@ export function getClubFee(): number {
  */
 export function calculateTotalPrice(
   licenseType: string,
+  config: FederationConfig | null,
   licensePrice: number | null,
   printPhysicalCard: boolean,
-  selectedComplements: Record<string, boolean>
+  selectedComplements: Record<string, boolean>,
+  clubFee: number
 ): number | null {
-  const clubFee = getClubFee();
-
   // If already federated, only pay the club fee
   if (isAlreadyFederated(licenseType)) {
     return clubFee;
@@ -103,13 +76,8 @@ export function calculateTotalPrice(
 
   if (licensePrice === null) return null;
 
-  const cardSupplement = printPhysicalCard
-    ? getPhysicalCardPrice(licenseType)
-    : 0;
-  const complementsSupplement = getComplementsTotal(
-    licenseType,
-    selectedComplements
-  );
+  const cardSupplement = printPhysicalCard ? getPhysicalCardPrice(config) : 0;
+  const complementsSupplement = getComplementsTotal(config, selectedComplements);
 
   return licensePrice + clubFee + cardSupplement + complementsSupplement;
 }
@@ -118,10 +86,9 @@ export function calculateTotalPrice(
  * Format complements for display in summary
  */
 export function formatComplementsForDisplay(
-  licenseType: string,
+  config: FederationConfig | null,
   selectedComplements: Record<string, boolean>
 ): string {
-  const config = getLicenseConfigForType(licenseType);
   if (!config) return "";
 
   const selected = config.complements
@@ -131,7 +98,7 @@ export function formatComplementsForDisplay(
   if (selected.length === 0) return "";
 
   let result = selected.join(", ");
-  if (hasFixedComplementPrice(config)) {
+  if (config.complementsFixedPrice !== undefined) {
     result += ` (+${config.complementsFixedPrice}€)`;
   }
 

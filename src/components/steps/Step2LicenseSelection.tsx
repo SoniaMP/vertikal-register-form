@@ -13,10 +13,11 @@ import {
   Checkbox,
   FormControlLabel,
   Typography,
+  CircularProgress,
 } from "@mui/material";
-import { hasFixedComplementPrice } from "../../types";
 import { FederationType } from "../../types/enums";
-import { licenseConfig } from "../../config/licenseConfig";
+import { useConfig } from "../../contexts";
+import type { FederationConfig } from "../../services/configService";
 
 interface Step2LicenseSelectionProps {
   licenseType: string;
@@ -41,11 +42,21 @@ const Step2LicenseSelectionComponent = ({
   onNext,
   onBack,
 }: Step2LicenseSelectionProps) => {
+  const { getFederationConfig, loading } = useConfig();
+
   if (!licenseType || licenseType === FederationType.ALREADY_FEDERATED) {
     return null;
   }
 
-  const config = licenseConfig[licenseType as keyof typeof licenseConfig];
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  const config = getFederationConfig(licenseType as FederationType);
   if (!config) return null;
 
   const physicalCardPrice = config.physicalCardPrice;
@@ -55,7 +66,7 @@ const Step2LicenseSelectionComponent = ({
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <Box
           component="img"
-          src={config.image}
+          src={config.imageUrl}
           alt={`Precio de licencias ${licenseType}`}
           sx={{
             width: "100%",
@@ -72,7 +83,7 @@ const Step2LicenseSelectionComponent = ({
             onChange={(e) => onSelectedOptionChange(e.target.value)}
             label={`Subtipo de licencia ${licenseType}`}
           >
-            {config.options.map((option: { value: string; label: string }) => (
+            {config.options.map((option) => (
               <MenuItem key={option.value} value={option.value}>
                 {option.label}
               </MenuItem>
@@ -98,7 +109,7 @@ const Step2LicenseSelectionComponent = ({
         </Box>
 
         <ComplementsSection
-          licenseType={licenseType}
+          config={config}
           selectedComplements={selectedComplements}
           onComplementChange={onComplementChange}
         />
@@ -123,54 +134,49 @@ const Step2LicenseSelectionComponent = ({
 };
 
 interface ComplementsSectionProps {
-  licenseType: string;
+  config: FederationConfig;
   selectedComplements: Record<string, boolean>;
   onComplementChange: (key: string, checked: boolean) => void;
 }
 
 const ComplementsSection = memo(function ComplementsSection({
-  licenseType,
+  config,
   selectedComplements,
   onComplementChange,
 }: ComplementsSectionProps) {
-  const config = licenseConfig[licenseType as keyof typeof licenseConfig];
-  if (!config) return null;
-
-  const isFERM = hasFixedComplementPrice(config);
+  const hasFixedPrice = config.complementsFixedPrice !== undefined;
 
   return (
     <Box sx={{ mt: 3, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
       <Typography variant="body1" gutterBottom sx={{ fontWeight: "bold" }}>
         Complementos opcionales
-        {isFERM && (
+        {hasFixedPrice && (
           <Typography component="span" variant="body2" color="text.secondary">
             {" "}
-            (+5€ si seleccionas alguno)
+            (+{config.complementsFixedPrice}€ si seleccionas alguno)
           </Typography>
         )}
       </Typography>
       <Box sx={{ mt: 1 }}>
-        {config.complements.map(
-          (complement: { key: string; label: string; price?: number }) => (
-            <FormControlLabel
-              key={complement.key}
-              control={
-                <Checkbox
-                  checked={selectedComplements[complement.key] || false}
-                  onChange={(e) =>
-                    onComplementChange(complement.key, e.target.checked)
-                  }
-                />
-              }
-              label={
-                complement.price
-                  ? `${complement.label} (+${complement.price}€)`
-                  : complement.label
-              }
-              sx={{ display: "block" }}
-            />
-          ),
-        )}
+        {config.complements.map((complement) => (
+          <FormControlLabel
+            key={complement.key}
+            control={
+              <Checkbox
+                checked={selectedComplements[complement.key] || false}
+                onChange={(e) =>
+                  onComplementChange(complement.key, e.target.checked)
+                }
+              />
+            }
+            label={
+              complement.price
+                ? `${complement.label} (+${complement.price}€)`
+                : complement.label
+            }
+            sx={{ display: "block" }}
+          />
+        ))}
       </Box>
     </Box>
   );

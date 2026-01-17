@@ -6,13 +6,14 @@ import {
   Step2LicenseSelection,
   Step3Summary,
 } from "../components/steps";
-import { licenseConfig } from "../config/licenseConfig";
 import { useRegistrationForm } from "../hooks/useRegistrationForm";
+import { useConfig } from "../contexts";
 import { FederationType, Step, ViewState } from "../types/enums";
 import { stepTitles } from "../i18n";
 
 function Home() {
   const { state, actions, handlers } = useRegistrationForm();
+  const { getFederationConfig } = useConfig();
 
   const {
     view,
@@ -32,8 +33,9 @@ function Home() {
       formData.licenseType &&
       formData.licenseType !== FederationType.ALREADY_FEDERATED
     ) {
-      const config =
-        licenseConfig[formData.licenseType as keyof typeof licenseConfig];
+      const config = getFederationConfig(
+        formData.licenseType as FederationType
+      );
       return config?.title || stepTitles[step];
     }
     return stepTitles[step];

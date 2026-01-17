@@ -13,25 +13,6 @@ export type { FederationType as FederationTypeValue } from "./enums";
 import type { FormData } from "./interfaces";
 
 /**
- * License configuration for a federation
- */
-export interface LicenseConfig {
-  title: string;
-  image: string;
-  physicalCardPrice: number;
-  options: { value: string; label: string }[];
-  complements: { key: string; label: string; price?: number }[];
-  complementsFixedPrice?: number;
-}
-
-/**
- * Map of federation type to license configuration
- */
-export interface LicenseConfigMap {
-  [key: string]: LicenseConfig;
-}
-
-/**
  * Initial empty form data
  */
 export const INITIAL_FORM_DATA: FormData = {
@@ -46,22 +27,6 @@ export const INITIAL_FORM_DATA: FormData = {
   sex: "",
   licenseType: "",
 };
-
-/**
- * Type for configs that may have fixed complement price
- */
-interface ConfigWithComplements {
-  complementsFixedPrice?: number;
-}
-
-/**
- * Type guard to check if config has fixed complement price
- */
-export function hasFixedComplementPrice(
-  config: ConfigWithComplements
-): boolean {
-  return config.complementsFixedPrice !== undefined;
-}
 
 /**
  * Checkout data passed to the payment component

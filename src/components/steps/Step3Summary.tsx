@@ -6,12 +6,13 @@
 import { memo, useState, useEffect } from "react";
 import { Box, Button, Typography, CircularProgress } from "@mui/material";
 import type { RegistrationFormData, CheckoutData } from "../../types";
+import { FederationType } from "../../types/enums";
 import { stripeService } from "../../services/stripeService";
+import { useConfig } from "../../contexts";
 import {
   isAlreadyFederated,
   getSelectedOptionLabel,
   getPhysicalCardPrice,
-  getClubFee,
   getComplementsTotal,
   formatComplementsForDisplay,
   calculateTotalPrice,
@@ -34,21 +35,27 @@ const Step3SummaryComponent = ({
   onSubmit,
   onBack,
 }: Step3SummaryProps) => {
+  const { config, getFederationConfig, loading: configLoading } = useConfig();
   const [price, setPrice] = useState<number | null>(null);
   const [loadingPrice, setLoadingPrice] = useState(false);
 
+  const federationConfig = getFederationConfig(
+    formData.licenseType as FederationType
+  );
   const alreadyFederated = isAlreadyFederated(formData.licenseType);
-  const clubFee = getClubFee();
-  const physicalCardPrice = getPhysicalCardPrice(formData.licenseType);
+  const clubFee = config?.clubFee || 0;
+  const physicalCardPrice = getPhysicalCardPrice(federationConfig);
   const complementsTotal = getComplementsTotal(
-    formData.licenseType,
-    selectedComplements,
+    federationConfig,
+    selectedComplements
   );
   const totalPrice = calculateTotalPrice(
     formData.licenseType,
+    federationConfig,
     price,
     printPhysicalCard,
     selectedComplements,
+    clubFee
   );
 
   // Fetch price only when this component mounts or selectedOption changes
@@ -75,6 +82,14 @@ const Step3SummaryComponent = ({
       cancelled = true;
     };
   }, [selectedOption, alreadyFederated]);
+
+  if (configLoading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,14 +224,16 @@ const LicenseSummary = memo(function LicenseSummary({
   printPhysicalCard,
   selectedComplements,
 }: LicenseSummaryProps) {
-  const optionLabel = getSelectedOptionLabel(
-    formData.licenseType,
-    selectedOption,
+  const { getFederationConfig } = useConfig();
+  const federationConfig = getFederationConfig(
+    formData.licenseType as FederationType
   );
-  const physicalCardPrice = getPhysicalCardPrice(formData.licenseType);
+
+  const optionLabel = getSelectedOptionLabel(federationConfig, selectedOption);
+  const physicalCardPrice = getPhysicalCardPrice(federationConfig);
   const complementsDisplay = formatComplementsForDisplay(
-    formData.licenseType,
-    selectedComplements,
+    federationConfig,
+    selectedComplements
   );
 
   return (

@@ -1,22 +1,23 @@
-# Plan: Vertikal Club - Aplicación de Registro con Pago
+# Plan: Club Vertikal - Aplicación de Registro con Pago
 
 ## Contexto
+
 El club Vertikal necesita una aplicación web donde los usuarios puedan registrarse como socios, elegir tipo de federativa y suplementos, pagar mediante Stripe, y recibir confirmación por email. Además, se necesita un panel de administración privado para gestionar los registros.
 
 ---
 
 ## Stack Tecnológico
 
-| Tecnología | Uso |
-|---|---|
-| **Next.js 15** (App Router) | Framework full-stack (frontend + API routes) |
-| **TypeScript** | Tipado estático |
-| **shadcn/ui + TailwindCSS** | Componentes UI y estilos |
-| **SQLite + Prisma** (dev) / **PostgreSQL** (prod) | Base de datos y ORM |
-| **Stripe Checkout** | Pasarela de pago (página hospedada por Stripe) |
-| **Resend + React Email** | Envío de emails de confirmación (tier gratuito: 100 emails/día) |
-| **Auth.js v5** (NextAuth) | Autenticación del panel admin (Credentials + JWT) |
-| **react-hook-form + Zod** | Formularios y validación |
+| Tecnología                                        | Uso                                                             |
+| ------------------------------------------------- | --------------------------------------------------------------- |
+| **Next.js 15** (App Router)                       | Framework full-stack (frontend + API routes)                    |
+| **TypeScript**                                    | Tipado estático                                                 |
+| **shadcn/ui + TailwindCSS**                       | Componentes UI y estilos                                        |
+| **SQLite + Prisma** (dev) / **PostgreSQL** (prod) | Base de datos y ORM                                             |
+| **Stripe Checkout**                               | Pasarela de pago (página hospedada por Stripe)                  |
+| **Resend + React Email**                          | Envío de emails de confirmación (tier gratuito: 100 emails/día) |
+| **Auth.js v5** (NextAuth)                         | Autenticación del panel admin (Credentials + JWT)               |
+| **react-hook-form + Zod**                         | Formularios y validación                                        |
 
 **Justificación de Next.js sobre Vite + Express:** Un solo proyecto desplegable, API routes integradas para Stripe/webhooks, Server Components para el panel admin con queries directas a Prisma, middleware nativo para proteger rutas admin, y shadcn/ui está diseñado para Next.js.
 
@@ -56,25 +57,30 @@ Función compartida `calculateTotal()` usada en ambos lados.
 ## Flujo de Registro (5 pasos)
 
 ### Paso 1 - Datos Personales
+
 - Datos personales obligatorios (nombre, apellidos, email, teléfono, DNI, fecha nacimiento, dirección)
 - Validación de campos con Zod antes de avanzar
 
 ### Paso 2 - Selección de Federativa y Suplementos
+
 - Selector de tipo de federativa (radio cards con precio)
 - **Al seleccionar federativa**: se cargan dinámicamente los suplementos asociados a esa federativa
 - Selector de suplementos (checkboxes con precio) — solo visible tras elegir federativa
 - Resumen de precio en tiempo real (federativa + suplementos seleccionados)
 
 ### Paso 3 - Resumen
+
 - Vista de todos los datos introducidos (solo lectura)
 - Desglose de precio (federativa + suplementos = total)
 - Botón "Editar" (vuelve al paso correspondiente) y "Proceder al pago"
 
 ### Paso 4 - Pago (Stripe Checkout hospedado)
+
 - `POST /api/checkout`: valida datos, crea Registration en BD, crea Stripe Session, devuelve URL
 - Redirect a página de pago de Stripe
 
 ### Paso 5 - Post-pago
+
 - Webhook de Stripe (`checkout.session.completed`) → actualiza Registration → envía email
 - Página de éxito con referencia del registro
 - Página de cancelación con opción de reintentar
@@ -152,18 +158,19 @@ vertikal-with-claude/
 
 ## API Endpoints
 
-| Método | Ruta | Auth | Descripción |
-|---|---|---|---|
-| GET | `/api/federation-types` | Público | Listar tipos federativa activos (con suplementos asociados incluidos) |
-| POST | `/api/checkout` | Público | Validar, crear registro, crear sesión Stripe |
-| POST | `/api/webhooks/stripe` | Firma Stripe | Confirmar pago, enviar email |
-| GET/POST | `/api/auth/[...nextauth]` | Público | Auth.js (login/logout/session) |
+| Método   | Ruta                      | Auth         | Descripción                                                           |
+| -------- | ------------------------- | ------------ | --------------------------------------------------------------------- |
+| GET      | `/api/federation-types`   | Público      | Listar tipos federativa activos (con suplementos asociados incluidos) |
+| POST     | `/api/checkout`           | Público      | Validar, crear registro, crear sesión Stripe                          |
+| POST     | `/api/webhooks/stripe`    | Firma Stripe | Confirmar pago, enviar email                                          |
+| GET/POST | `/api/auth/[...nextauth]` | Público      | Auth.js (login/logout/session)                                        |
 
 ---
 
 ## Orden de Implementación
 
 ### Fase 1: Scaffolding
+
 1. Inicializar proyecto Next.js con TypeScript + Tailwind
 2. Instalar dependencias (Prisma, Stripe, Resend, Auth.js, react-hook-form, Zod)
 3. Configurar shadcn/ui e instalar componentes
@@ -173,11 +180,13 @@ vertikal-with-claude/
 7. Seed de datos iniciales (tipos federativa, suplementos, usuario admin)
 
 ### Fase 2: Lógica Compartida
+
 1. Esquemas Zod de validación
 2. Funciones de cálculo de precio
 3. Tipos TypeScript compartidos
 
 ### Fase 3: Formulario de Registro
+
 1. Endpoint GET `/api/federation-types` que devuelve tipos con sus suplementos asociados
 2. Wizard multi-paso (container + state management, 5 pasos)
 3. Paso 1: formulario datos personales
@@ -187,13 +196,15 @@ vertikal-with-claude/
 7. Redirect a Stripe y páginas éxito/cancelación
 
 ### Fase 4: Webhook + Email
+
 1. Handler webhook Stripe (verificar firma, actualizar BD, enviar email)
 2. Template email confirmación con React Email
 3. Función de envío con Resend
 
 ### Fase 5: Panel Admin
+
 1. Configurar Auth.js con Credentials provider
-2. Middleware protección rutas /admin/*
+2. Middleware protección rutas /admin/\*
 3. Página login admin
 4. Layout admin con sidebar
 5. Tabla de registros con filtros y paginación
@@ -201,6 +212,7 @@ vertikal-with-claude/
 7. Script crear usuario admin
 
 ### Fase 6: Polish
+
 1. Error boundaries y loading states
 2. Responsividad móvil
 3. Persistencia formulario en sessionStorage
@@ -222,6 +234,7 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
 **Servicios a configurar:**
+
 - **Stripe**: Ya disponible. Usar claves de test mode
 - **Resend**: Registrarse en resend.com (gratuito, 100 emails/día). Para desarrollo, el sender por defecto `onboarding@resend.dev` funciona
 - **BD**: SQLite local, no requiere instalación

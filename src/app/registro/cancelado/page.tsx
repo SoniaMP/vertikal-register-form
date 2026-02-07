@@ -3,7 +3,7 @@ import { XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Pago cancelado - Vertikal Club",
+  title: "Pago cancelado - Club Vertikal",
   description: "El pago ha sido cancelado",
 };
 

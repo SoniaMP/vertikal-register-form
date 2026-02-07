@@ -3,7 +3,7 @@ import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Registro completado - Vertikal Club",
+  title: "Registro completado - Club Vertikal",
   description: "Tu registro se ha completado correctamente",
 };
 

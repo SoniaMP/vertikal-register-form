@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ClipboardList } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { LogoutButton } from "./logout-button";
@@ -11,10 +12,18 @@ export function AdminSidebar({ userName }: Props) {
   return (
     <aside className="flex h-full w-56 flex-col border-r bg-sidebar text-sidebar-foreground">
       <div className="p-4">
-        <Link href="/admin" className="text-lg font-bold">
-          Vertikal Club
+        <Link href="/admin">
+          <Image
+            src="/logo-horizontal-light.png"
+            alt="Club Vertikal"
+            width={160}
+            height={40}
+            priority
+          />
         </Link>
-        <p className="text-xs text-muted-foreground mt-1">Administración</p>
+        <p className="text-xs text-sidebar-foreground/70 mt-1">
+          Administración
+        </p>
       </div>
       <Separator />
       <nav className="flex-1 p-2 space-y-1">
@@ -28,7 +37,7 @@ export function AdminSidebar({ userName }: Props) {
       </nav>
       <Separator />
       <div className="p-3">
-        <p className="text-xs text-muted-foreground mb-2 truncate">
+        <p className="text-xs text-sidebar-foreground/70 mb-2 truncate">
           {userName}
         </p>
         <LogoutButton />

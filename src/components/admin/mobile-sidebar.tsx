@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ClipboardList, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,23 +23,40 @@ export function MobileSidebar({ userName }: Props) {
 
   return (
     <>
-      <div className="flex items-center gap-3 border-b p-3 md:hidden">
+      <div className="flex items-center gap-3 border-b bg-sidebar p-3 md:hidden">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setIsOpen(true)}
           aria-label="Abrir menu"
+          className="text-sidebar-foreground hover:bg-sidebar-accent"
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <span className="text-lg font-bold">Vertikal Club</span>
+        <Image
+          src="/logo-horizontal-light.png"
+          alt="Club Vertikal"
+          width={140}
+          height={28}
+          priority
+        />
       </div>
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent side="left" className="w-56 p-0">
+        <SheetContent
+          side="left"
+          className="w-56 bg-sidebar text-sidebar-foreground p-0"
+        >
           <SheetHeader className="p-4">
-            <SheetTitle>Vertikal Club</SheetTitle>
-            <p className="text-xs text-muted-foreground">Administracion</p>
+            <SheetTitle className="flex">
+              <Image
+                src="/logo-horizontal-light.png"
+                alt="Club Vertikal"
+                width={140}
+                height={28}
+              />
+            </SheetTitle>
+            <p className="text-xs text-sidebar-foreground/70">Administración</p>
           </SheetHeader>
           <Separator />
           <nav className="flex-1 p-2 space-y-1">
@@ -53,7 +71,7 @@ export function MobileSidebar({ userName }: Props) {
           </nav>
           <Separator />
           <div className="p-3">
-            <p className="text-xs text-muted-foreground mb-2 truncate">
+            <p className="text-xs text-sidebar-foreground/70 mb-2 truncate">
               {userName}
             </p>
             <LogoutButton />

@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model FederationType {
+  id          String       @id @default(cuid())
+  name        String
+  description String
+  price       Int          // Price in cents (4500 = 45.00 EUR)
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  supplements   Supplement[]
+  registrations Registration[]
+}
+
+model Supplement {
+  id               String         @id @default(cuid())
+  name             String
+  description      String
+  price            Int            // Price in cents
+  active           Boolean        @default(true)
+  federationTypeId String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  federationType          FederationType           @relation(fields: [federationTypeId], references: [id])
+  registrationSupplements RegistrationSupplement[]
+}
+
+model Registration {
+  id               String   @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String
+  phone            String
+  dni              String
+  dateOfBirth      String
+  address          String
+  city             String
+  postalCode       String
+  province         String
+  federationTypeId String
+  totalAmount      Int      // Total in cents
+  paymentStatus    String   @default("PENDING") // PENDING | COMPLETED | FAILED | REFUNDED
+  stripeSessionId  String?
+  stripePaymentId  String?
+  confirmationSent Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  federationType FederationType           @relation(fields: [federationTypeId], references: [id])
+  supplements    RegistrationSupplement[]
+}
+
+model RegistrationSupplement {
+  registrationId String
+  supplementId   String
+  priceAtTime    Int // Snapshot of the price at registration time
+
+  registration Registration @relation(fields: [registrationId], references: [id])
+  supplement   Supplement   @relation(fields: [supplementId], references: [id])
+
+  @@id([registrationId, supplementId])
+}
+
+model AdminUser {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+  name         String
+}

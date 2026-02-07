@@ -8,6 +8,7 @@ import { StepIndicator } from "./step-indicator";
 import { PersonalDataForm } from "./personal-data-form";
 import { FederationStep } from "./federation-step";
 import { RegistrationSummary } from "./registration-summary";
+import { useFormPersistence } from "@/hooks/use-form-persistence";
 import {
   personalDataSchema,
   federationSelectionSchema,
@@ -43,6 +44,12 @@ export function RegistrationWizard({
       federationTypeId: "",
       supplementIds: [],
     },
+  });
+
+  const { clearSavedData } = useFormPersistence({
+    form,
+    currentStep,
+    onRestoreStep: setCurrentStep,
   });
 
   async function handleNextStep() {
@@ -90,7 +97,8 @@ export function RegistrationWizard({
         return;
       }
 
-      // Redirect to Stripe Checkout
+      // Clear saved form data and redirect to Stripe Checkout
+      clearSavedData();
       window.location.href = result.url;
     } catch {
       setError("Error de conexión. Comprueba tu conexión e inténtalo de nuevo.");

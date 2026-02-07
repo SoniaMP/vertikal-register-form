@@ -48,14 +48,14 @@ export function SupplementSelector({ supplements }: SupplementSelectorProps) {
                         }}
                       />
                     </FormControl>
-                    <div className="flex flex-1 items-center justify-between">
-                      <div>
+                    <div className="flex flex-1 items-start justify-between gap-2">
+                      <div className="min-w-0">
                         <span className="font-medium">{supplement.name}</span>
                         <p className="text-sm text-muted-foreground">
                           {supplement.description}
                         </p>
                       </div>
-                      <span className="font-semibold">
+                      <span className="shrink-0 font-semibold">
                         +{formatPrice(supplement.price)}
                       </span>
                     </div>

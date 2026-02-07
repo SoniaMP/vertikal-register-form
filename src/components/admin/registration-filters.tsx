@@ -51,18 +51,18 @@ export function RegistrationFilters({ federationTypes }: Props) {
   const hasFilters = searchParams.toString() !== "";
 
   return (
-    <div className="flex flex-wrap items-end gap-3">
+    <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end">
       <Input
         placeholder="Buscar por nombre o email..."
         defaultValue={searchParams.get("search") ?? ""}
         onChange={(e) => updateParam("search", e.target.value)}
-        className="w-64"
+        className="sm:w-64"
       />
       <Select
         defaultValue={searchParams.get("federation") ?? "all"}
         onValueChange={(v) => updateParam("federation", v)}
       >
-        <SelectTrigger className="w-52">
+        <SelectTrigger className="sm:w-52">
           <SelectValue placeholder="Tipo de federativa" />
         </SelectTrigger>
         <SelectContent>
@@ -78,7 +78,7 @@ export function RegistrationFilters({ federationTypes }: Props) {
         defaultValue={searchParams.get("status") ?? "all"}
         onValueChange={(v) => updateParam("status", v)}
       >
-        <SelectTrigger className="w-44">
+        <SelectTrigger className="sm:w-44">
           <SelectValue placeholder="Estado de pago" />
         </SelectTrigger>
         <SelectContent>

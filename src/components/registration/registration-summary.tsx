@@ -107,7 +107,7 @@ type SummaryRowProps = {
 
 function SummaryRow({ label, value }: SummaryRowProps) {
   return (
-    <div className="flex justify-between text-sm">
+    <div className="flex flex-col gap-0.5 text-sm sm:flex-row sm:justify-between">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium">{value}</span>
     </div>

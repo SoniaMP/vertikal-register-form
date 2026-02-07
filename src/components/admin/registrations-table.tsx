@@ -60,44 +60,88 @@ export function RegistrationsTable({ registrations }: Props) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nombre</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Federativa</TableHead>
-          <TableHead>Total</TableHead>
-          <TableHead>Estado</TableHead>
-          <TableHead>Fecha</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <>
+      {/* Mobile card list */}
+      <div className="space-y-3 md:hidden">
         {registrations.map((reg) => (
-          <TableRow key={reg.id}>
-            <TableCell>
-              <Link
-                href={`/admin/registros/${reg.id}`}
-                className="font-medium hover:underline"
-              >
-                {reg.firstName} {reg.lastName}
-              </Link>
-            </TableCell>
-            <TableCell className="text-muted-foreground">
-              {reg.email}
-            </TableCell>
-            <TableCell>{reg.federationType.name}</TableCell>
-            <TableCell>{formatPrice(reg.totalAmount)}</TableCell>
-            <TableCell>
-              <Badge variant={STATUS_VARIANTS[reg.paymentStatus] ?? "outline"}>
-                {STATUS_LABELS[reg.paymentStatus] ?? reg.paymentStatus}
-              </Badge>
-            </TableCell>
-            <TableCell className="text-muted-foreground">
-              {formatDate(reg.createdAt)}
-            </TableCell>
-          </TableRow>
+          <MobileRegistrationCard key={reg.id} registration={reg} />
         ))}
-      </TableBody>
-    </Table>
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nombre</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Federativa</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Fecha</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {registrations.map((reg) => (
+              <TableRow key={reg.id}>
+                <TableCell>
+                  <Link
+                    href={`/admin/registros/${reg.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {reg.firstName} {reg.lastName}
+                  </Link>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {reg.email}
+                </TableCell>
+                <TableCell>{reg.federationType.name}</TableCell>
+                <TableCell>{formatPrice(reg.totalAmount)}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={STATUS_VARIANTS[reg.paymentStatus] ?? "outline"}
+                  >
+                    {STATUS_LABELS[reg.paymentStatus] ?? reg.paymentStatus}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {formatDate(reg.createdAt)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
+  );
+}
+
+function MobileRegistrationCard({
+  registration: reg,
+}: {
+  registration: Registration;
+}) {
+  return (
+    <Link
+      href={`/admin/registros/${reg.id}`}
+      className="block rounded-lg border p-4 hover:bg-muted/50 transition-colors"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-medium truncate">
+            {reg.firstName} {reg.lastName}
+          </p>
+          <p className="text-sm text-muted-foreground truncate">{reg.email}</p>
+        </div>
+        <Badge variant={STATUS_VARIANTS[reg.paymentStatus] ?? "outline"}>
+          {STATUS_LABELS[reg.paymentStatus] ?? reg.paymentStatus}
+        </Badge>
+      </div>
+      <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
+        <span>{reg.federationType.name}</span>
+        <span>{formatPrice(reg.totalAmount)}</span>
+        <span className="ml-auto">{formatDate(reg.createdAt)}</span>
+      </div>
+    </Link>
   );
 }

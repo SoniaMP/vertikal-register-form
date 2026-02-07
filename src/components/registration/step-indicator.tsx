@@ -38,7 +38,7 @@ export function StepIndicator({ currentStep }: StepIndicatorProps) {
                 </div>
                 <span
                   className={cn(
-                    "text-xs font-medium",
+                    "hidden text-xs font-medium sm:block",
                     isCurrent ? "text-primary" : "text-muted-foreground",
                   )}
                 >

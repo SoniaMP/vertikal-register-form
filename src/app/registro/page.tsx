@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { RegistrationWizard } from "@/components/registration/registration-wizard";

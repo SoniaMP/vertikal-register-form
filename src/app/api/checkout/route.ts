@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { registrationSchema } from "@/validations/registration";
 import { calculateTotal } from "@/helpers/price-calculator";
 import type { FederationType } from "@/types";
 
 export async function POST(request: NextRequest) {
+  const stripe = getStripe();
   const body = await request.json();
   const parsed = registrationSchema.safeParse(body);
 

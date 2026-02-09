@@ -10,12 +10,16 @@ export default auth((req) => {
 
   // Authenticated users trying to access login page → redirect to admin
   if (isLoginPage && isAuthenticated) {
-    return NextResponse.redirect(new URL("/admin", req.url));
+    const url = req.nextUrl.clone();
+    url.pathname = "/admin";
+    return NextResponse.redirect(url);
   }
 
   // Unauthenticated users trying to access admin → redirect to login
   if (!isLoginPage && !isAuthenticated) {
-    return NextResponse.redirect(new URL("/admin/login", req.url));
+    const url = req.nextUrl.clone();
+    url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();

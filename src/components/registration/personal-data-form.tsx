@@ -20,48 +20,22 @@ export function PersonalDataForm({ onNext }: PersonalDataFormProps) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField name="firstName" label="Nombre" placeholder="Juan" />
-        <TextField
-          name="lastName"
-          label="Apellidos"
-          placeholder="García López"
-        />
+        <TextField name="firstName" label="Nombre" />
+        <TextField name="lastName" label="Apellidos" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField
-          name="email"
-          label="Email"
-          type="email"
-          placeholder="juan@ejemplo.com"
-        />
-        <TextField
-          name="phone"
-          label="Teléfono"
-          type="tel"
-          placeholder="612345678"
-        />
+        <TextField name="email" label="Email" type="email" />
+        <TextField name="phone" label="Teléfono" type="tel" />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField name="dni" label="DNI" placeholder="12345678A" />
-        <TextField
-          name="dateOfBirth"
-          label="Fecha de nacimiento"
-          type="date"
-        />
+        <TextField name="dni" label="DNI" />
+        <TextField name="dateOfBirth" label="Fecha de nacimiento" type="date" />
       </div>
-      <TextField
-        name="address"
-        label="Dirección"
-        placeholder="Calle Mayor 1, 2ºA"
-      />
+      <TextField name="address" label="Dirección" />
       <div className="grid gap-4 sm:grid-cols-3">
-        <TextField name="city" label="Ciudad" placeholder="Madrid" />
-        <TextField
-          name="postalCode"
-          label="Código postal"
-          placeholder="28001"
-        />
-        <TextField name="province" label="Provincia" placeholder="Madrid" />
+        <TextField name="city" label="Ciudad" />
+        <TextField name="postalCode" label="Código postal" />
+        <TextField name="province" label="Provincia" />
       </div>
       <div className="flex justify-end pt-4">
         <Button type="button" onClick={onNext}>

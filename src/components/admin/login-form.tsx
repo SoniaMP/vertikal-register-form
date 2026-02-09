@@ -22,7 +22,6 @@ export function LoginForm() {
           id="email"
           name="email"
           type="email"
-          placeholder="admin@vertikal.club"
           required
           autoComplete="email"
         />

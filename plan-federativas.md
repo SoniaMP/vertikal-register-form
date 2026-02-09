@@ -100,7 +100,7 @@ Función compartida `calculateTotal()` usada en ambos lados.
 ## Estructura del Proyecto
 
 ```
-vertikal-with-claude/
+vertikal-register-form/
 ├── prisma/
 │   ├── schema.prisma
 │   ├── seed.ts                         # Datos iniciales (tipos, suplementos, admin)

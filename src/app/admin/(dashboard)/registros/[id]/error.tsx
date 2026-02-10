@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 type ErrorPageProps = {
-  error: Error;
+  error: Error & { digest?: string };
   reset: () => void;
 };
 

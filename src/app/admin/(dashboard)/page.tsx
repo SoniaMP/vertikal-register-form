@@ -27,7 +27,7 @@ export default async function AdminRegistrationsPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Registros</h1>
+      <h1 className="text-2xl font-bold">Miembros</h1>
       <RegistrationFilters federationTypes={federationTypes} />
       <RegistrationsTable registrations={registrations} />
       <Pagination currentPage={page} totalPages={totalPages} />
@@ -35,10 +35,7 @@ export default async function AdminRegistrationsPage({
   );
 }
 
-async function fetchData(
-  params: Awaited<SearchParams>,
-  page: number,
-) {
+async function fetchData(params: Awaited<SearchParams>, page: number) {
   const where = buildWhere(params);
 
   const [registrations, total, federationTypes] = await Promise.all([

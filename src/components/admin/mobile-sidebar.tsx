@@ -66,7 +66,7 @@ export function MobileSidebar({ userName }: Props) {
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             >
               <ClipboardList className="h-4 w-4" />
-              Registros
+              Miembros
             </Link>
           </nav>
           <Separator />

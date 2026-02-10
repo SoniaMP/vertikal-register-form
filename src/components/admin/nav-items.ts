@@ -9,6 +9,6 @@ export type NavItem = {
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Miembros", icon: ClipboardList },
-  { href: "/admin/tipos-federacion", label: "Tipos federativa", icon: Shield },
+  { href: "/admin/tipos-federacion", label: "Federativas", icon: Shield },
   { href: "/admin/ajustes", label: "Ajustes", icon: Settings },
 ];

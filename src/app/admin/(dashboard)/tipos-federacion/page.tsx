@@ -26,7 +26,7 @@ export default async function FederationTypesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Tipos de federativa</h1>
+        <h1 className="text-2xl font-bold">Gestión federativas deportivas</h1>
         <CreateFederationTypeButton />
       </div>
       <FederationTypesTable federationTypes={federationTypes} />

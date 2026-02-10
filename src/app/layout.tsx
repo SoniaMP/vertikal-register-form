@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Club Vertikal - Registro de socios",
+  title: "Club Vertikal - Panel de administración",
   description:
-    "Regístrate como socio del Club Vertikal. Elige tu federativa, selecciona suplementos y completa tu inscripción.",
+    "Panel de administración para gestionar miembros, federativas deportivas y ajustes del club.",
 };
 
 export default function RootLayout({

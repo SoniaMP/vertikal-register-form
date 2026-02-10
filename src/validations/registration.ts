@@ -45,6 +45,9 @@ export const federationSelectionSchema = z.object({
   federationTypeId: z
     .string()
     .min(1, { message: "Selecciona un tipo de federativa" }),
+  federationSubtypeId: z
+    .string()
+    .min(1, { message: "Selecciona un subtipo de federativa" }),
   supplementIds: z.array(z.string()),
 });
 

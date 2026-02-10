@@ -19,6 +19,7 @@ type Registration = {
   totalAmount: number;
   createdAt: Date;
   federationType: { name: string };
+  federationSubtype: { name: string };
 };
 
 type Props = {
@@ -95,7 +96,7 @@ export function RegistrationsTable({ registrations }: Props) {
                 <TableCell className="text-muted-foreground">
                   {reg.email}
                 </TableCell>
-                <TableCell>{reg.federationType.name}</TableCell>
+                <TableCell>{reg.federationType.name} - {reg.federationSubtype.name}</TableCell>
                 <TableCell>{formatPrice(reg.totalAmount)}</TableCell>
                 <TableCell>
                   <Badge
@@ -138,7 +139,7 @@ function MobileRegistrationCard({
         </Badge>
       </div>
       <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-        <span>{reg.federationType.name}</span>
+        <span>{reg.federationType.name} - {reg.federationSubtype.name}</span>
         <span>{formatPrice(reg.totalAmount)}</span>
         <span className="ml-auto">{formatDate(reg.createdAt)}</span>
       </div>

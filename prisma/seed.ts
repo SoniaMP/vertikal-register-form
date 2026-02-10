@@ -13,12 +13,11 @@ function hashPassword(password: string): string {
 }
 
 async function main() {
-  // Create federation types
+  // Create federation types (no price — price lives on subtypes)
   const federativaBasica = await prisma.federationType.create({
     data: {
       name: "Federativa Basica",
       description: "Licencia federativa basica para la temporada 2025/2026",
-      price: 4500, // 45.00 EUR
       active: true,
     },
   });
@@ -28,9 +27,42 @@ async function main() {
       name: "Federativa Competicion",
       description:
         "Licencia federativa de competicion para la temporada 2025/2026",
-      price: 7500, // 75.00 EUR
       active: true,
     },
+  });
+
+  // Create subtypes (with prices)
+  await prisma.federationSubtype.createMany({
+    data: [
+      {
+        name: "Estándar",
+        description: "Modalidad estándar de licencia básica",
+        price: 4500, // 45.00 EUR
+        active: true,
+        federationTypeId: federativaBasica.id,
+      },
+      {
+        name: "Premium",
+        description: "Modalidad premium de licencia básica con extras",
+        price: 6000, // 60.00 EUR
+        active: true,
+        federationTypeId: federativaBasica.id,
+      },
+      {
+        name: "Estándar",
+        description: "Modalidad estándar de competición",
+        price: 7500, // 75.00 EUR
+        active: true,
+        federationTypeId: federativaCompeticion.id,
+      },
+      {
+        name: "Elite",
+        description: "Modalidad élite de competición",
+        price: 12000, // 120.00 EUR
+        active: true,
+        federationTypeId: federativaCompeticion.id,
+      },
+    ],
   });
 
   // Create supplements linked to federation types

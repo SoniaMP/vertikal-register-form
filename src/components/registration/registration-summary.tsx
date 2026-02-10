@@ -27,12 +27,15 @@ export function RegistrationSummary({
   const federation = federationTypes.find(
     (ft) => ft.id === data.federationTypeId,
   );
+  const subtype = federation?.subtypes.find(
+    (st) => st.id === data.federationSubtypeId,
+  );
   const selectedSupplements =
     federation?.supplements.filter((s) =>
       data.supplementIds?.includes(s.id),
     ) ?? [];
-  const breakdown = federation
-    ? calculateTotal(federation, selectedSupplements)
+  const breakdown = subtype
+    ? calculateTotal(subtype, selectedSupplements)
     : null;
 
   return (
@@ -53,6 +56,9 @@ export function RegistrationSummary({
 
       <SummarySection title="Federativa y suplementos" onEdit={() => onEdit(2)}>
         <SummaryRow label="Tipo" value={federation?.name ?? ""} />
+        {subtype && (
+          <SummaryRow label="Modalidad" value={subtype.name} />
+        )}
         {selectedSupplements.length > 0 && (
           <SummaryRow
             label="Suplementos"

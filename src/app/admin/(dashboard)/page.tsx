@@ -41,7 +41,7 @@ async function fetchData(params: Awaited<SearchParams>, page: number) {
   const [registrations, total, federationTypes] = await Promise.all([
     prisma.registration.findMany({
       where,
-      include: { federationType: true },
+      include: { federationType: true, federationSubtype: true },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,

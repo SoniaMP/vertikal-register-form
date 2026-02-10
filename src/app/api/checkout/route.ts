@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { registrationSchema } from "@/validations/registration";
 import { calculateTotal } from "@/helpers/price-calculator";
-import type { FederationType } from "@/types";
+import type { FederationType, FederationSubtype } from "@/types";
 
 export async function POST(request: NextRequest) {
   const stripe = getStripe();
@@ -19,10 +19,12 @@ export async function POST(request: NextRequest) {
 
   const data = parsed.data;
 
-  // Fetch federation type with supplements from DB
   const federationType = (await prisma.federationType.findUnique({
     where: { id: data.federationTypeId, active: true },
-    include: { supplements: { where: { active: true } } },
+    include: {
+      subtypes: { where: { active: true } },
+      supplements: { where: { active: true } },
+    },
   })) as FederationType | null;
 
   if (!federationType) {
@@ -32,7 +34,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Validate selected supplements belong to this federation type
+  const subtype = federationType.subtypes.find(
+    (s) => s.id === data.federationSubtypeId,
+  ) as FederationSubtype | undefined;
+
+  if (!subtype) {
+    return NextResponse.json(
+      { error: "Subtipo de federativa no encontrado o no pertenece al tipo seleccionado" },
+      { status: 400 },
+    );
+  }
+
   const validSupplements = federationType.supplements.filter((s) =>
     data.supplementIds.includes(s.id),
   );
@@ -44,10 +56,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Server-side price calculation (never trust the frontend)
-  const breakdown = calculateTotal(federationType, validSupplements);
+  const breakdown = calculateTotal(subtype, validSupplements);
 
-  // Create registration in DB
   const registration = await prisma.registration.create({
     data: {
       firstName: data.firstName,
@@ -61,6 +71,7 @@ export async function POST(request: NextRequest) {
       postalCode: data.postalCode,
       province: data.province,
       federationTypeId: data.federationTypeId,
+      federationSubtypeId: data.federationSubtypeId,
       totalAmount: breakdown.total,
       paymentStatus: "PENDING",
       supplements: {
@@ -72,13 +83,12 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  // Build Stripe line items
   const lineItems = [
     {
       price_data: {
         currency: "eur",
-        product_data: { name: federationType.name },
-        unit_amount: federationType.price,
+        product_data: { name: `${federationType.name} - ${subtype.name}` },
+        unit_amount: subtype.price,
       },
       quantity: 1,
     },
@@ -105,7 +115,6 @@ export async function POST(request: NextRequest) {
       cancel_url: `${appUrl}/registro/cancelado?registration_id=${registration.id}`,
     });
 
-    // Store Stripe session ID
     await prisma.registration.update({
       where: { id: registration.id },
       data: { stripeSessionId: session.id },
@@ -113,7 +122,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    // Mark registration as failed so it doesn't stay PENDING forever
     await prisma.registration.update({
       where: { id: registration.id },
       data: { paymentStatus: "FAILED" },

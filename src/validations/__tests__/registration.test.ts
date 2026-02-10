@@ -117,6 +117,7 @@ describe("federationSelectionSchema", () => {
   it("accepts valid selection with supplements", () => {
     const result = federationSelectionSchema.safeParse({
       federationTypeId: "abc123",
+      federationSubtypeId: "sub123",
       supplementIds: ["sup1", "sup2"],
     });
     expect(result.success).toBe(true);
@@ -125,6 +126,7 @@ describe("federationSelectionSchema", () => {
   it("accepts selection without supplements", () => {
     const result = federationSelectionSchema.safeParse({
       federationTypeId: "abc123",
+      federationSubtypeId: "sub123",
       supplementIds: [],
     });
     expect(result.success).toBe(true);
@@ -133,6 +135,24 @@ describe("federationSelectionSchema", () => {
   it("rejects empty federation type id", () => {
     const result = federationSelectionSchema.safeParse({
       federationTypeId: "",
+      federationSubtypeId: "sub123",
+      supplementIds: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects empty federation subtype id", () => {
+    const result = federationSelectionSchema.safeParse({
+      federationTypeId: "abc123",
+      federationSubtypeId: "",
+      supplementIds: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing federation subtype id", () => {
+    const result = federationSelectionSchema.safeParse({
+      federationTypeId: "abc123",
       supplementIds: [],
     });
     expect(result.success).toBe(false);
@@ -144,6 +164,7 @@ describe("registrationSchema", () => {
     const result = registrationSchema.safeParse({
       ...validPersonalData,
       federationTypeId: "fed1",
+      federationSubtypeId: "sub1",
       supplementIds: ["sup1"],
     });
     expect(result.success).toBe(true);
@@ -152,6 +173,16 @@ describe("registrationSchema", () => {
   it("rejects registration missing federation type", () => {
     const result = registrationSchema.safeParse({
       ...validPersonalData,
+      federationSubtypeId: "sub1",
+      supplementIds: ["sup1"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects registration missing federation subtype", () => {
+    const result = registrationSchema.safeParse({
+      ...validPersonalData,
+      federationTypeId: "fed1",
       supplementIds: ["sup1"],
     });
     expect(result.success).toBe(false);
@@ -162,6 +193,7 @@ describe("registrationSchema", () => {
       ...validPersonalData,
       email: "bad",
       federationTypeId: "fed1",
+      federationSubtypeId: "sub1",
       supplementIds: [],
     });
     expect(result.success).toBe(false);

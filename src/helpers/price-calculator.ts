@@ -1,7 +1,7 @@
-import type { FederationType, PriceBreakdown, Supplement } from "@/types";
+import type { FederationSubtype, PriceBreakdown, Supplement } from "@/types";
 
 export function calculateTotal(
-  federationType: FederationType,
+  subtype: FederationSubtype,
   selectedSupplements: Supplement[],
 ): PriceBreakdown {
   const supplements = selectedSupplements.map((s) => ({
@@ -15,9 +15,10 @@ export function calculateTotal(
   );
 
   return {
-    federationPrice: federationType.price,
+    subtypeName: subtype.name,
+    subtypePrice: subtype.price,
     supplements,
-    total: federationType.price + supplementsTotal,
+    total: subtype.price + supplementsTotal,
   };
 }
 

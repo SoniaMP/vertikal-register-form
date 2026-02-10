@@ -14,12 +14,16 @@ export default async function RegistroPage() {
   const federationTypes = (await prisma.federationType.findMany({
     where: { active: true },
     include: {
+      subtypes: {
+        where: { active: true },
+        orderBy: { price: "asc" },
+      },
       supplements: {
         where: { active: true },
         orderBy: { name: "asc" },
       },
     },
-    orderBy: { price: "asc" },
+    orderBy: { name: "asc" },
   })) as FederationType[];
 
   return (

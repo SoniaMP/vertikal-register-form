@@ -10,13 +10,27 @@ model FederationType {
   id          String       @id @default(cuid())
   name        String
   description String
-  price       Int          // Price in cents (4500 = 45.00 EUR)
   active      Boolean      @default(true)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  subtypes      FederationSubtype[]
   supplements   Supplement[]
   registrations Registration[]
+}
+
+model FederationSubtype {
+  id               String   @id @default(cuid())
+  name             String
+  description      String
+  price            Int      // Price in cents (4500 = 45.00 EUR)
+  active           Boolean  @default(true)
+  federationTypeId String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  federationType FederationType @relation(fields: [federationTypeId], references: [id])
+  registrations  Registration[]
 }
 
 model Supplement {
@@ -34,28 +48,30 @@ model Supplement {
 }
 
 model Registration {
-  id               String   @id @default(cuid())
-  firstName        String
-  lastName         String
-  email            String
-  phone            String
-  dni              String
-  dateOfBirth      String
-  address          String
-  city             String
-  postalCode       String
-  province         String
-  federationTypeId String
-  totalAmount      Int      // Total in cents
-  paymentStatus    String   @default("PENDING") // PENDING | COMPLETED | FAILED | REFUNDED
-  stripeSessionId  String?
-  stripePaymentId  String?
-  confirmationSent Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  firstName             String
+  lastName              String
+  email                 String
+  phone                 String
+  dni                   String
+  dateOfBirth           String
+  address               String
+  city                  String
+  postalCode            String
+  province              String
+  federationTypeId      String
+  federationSubtypeId   String
+  totalAmount           Int      // Total in cents
+  paymentStatus         String   @default("PENDING") // PENDING | COMPLETED | FAILED | REFUNDED
+  stripeSessionId       String?
+  stripePaymentId       String?
+  confirmationSent      Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  federationType FederationType           @relation(fields: [federationTypeId], references: [id])
-  supplements    RegistrationSupplement[]
+  federationType    FederationType           @relation(fields: [federationTypeId], references: [id])
+  federationSubtype FederationSubtype        @relation(fields: [federationSubtypeId], references: [id])
+  supplements       RegistrationSupplement[]
 }
 
 model RegistrationSupplement {

@@ -3,6 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { FederationSelector } from "./federation-selector";
+import { SubtypeSelector } from "./subtype-selector";
 import { SupplementSelector } from "./supplement-selector";
 import { PriceSummary } from "./price-summary";
 import { calculateTotal } from "@/helpers/price-calculator";
@@ -22,10 +23,15 @@ export function FederationStep({
 }: FederationStepProps) {
   const form = useFormContext<RegistrationInput>();
   const selectedFederationId = form.watch("federationTypeId");
+  const selectedSubtypeId = form.watch("federationSubtypeId");
   const selectedSupplementIds = form.watch("supplementIds");
 
   const selectedFederation = federationTypes.find(
     (ft) => ft.id === selectedFederationId,
+  );
+
+  const selectedSubtype = selectedFederation?.subtypes.find(
+    (st) => st.id === selectedSubtypeId,
   );
 
   const selectedSupplements =
@@ -33,8 +39,8 @@ export function FederationStep({
       selectedSupplementIds?.includes(s.id),
     ) ?? [];
 
-  const breakdown = selectedFederation
-    ? calculateTotal(selectedFederation, selectedSupplements)
+  const breakdown = selectedSubtype
+    ? calculateTotal(selectedSubtype, selectedSupplements)
     : null;
 
   return (
@@ -42,8 +48,12 @@ export function FederationStep({
       <FederationSelector federationTypes={federationTypes} />
 
       {selectedFederation && (
+        <SubtypeSelector subtypes={selectedFederation.subtypes} />
+      )}
+
+      {selectedSubtype && (
         <>
-          <SupplementSelector supplements={selectedFederation.supplements} />
+          <SupplementSelector supplements={selectedFederation!.supplements} />
           {breakdown && <PriceSummary breakdown={breakdown} />}
         </>
       )}

@@ -14,6 +14,7 @@ export default async function RegistrationDetailPage({ params }: Props) {
     where: { id },
     include: {
       federationType: true,
+      federationSubtype: true,
       supplements: { include: { supplement: true } },
     },
   });

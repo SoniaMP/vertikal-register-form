@@ -1,14 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { calculateTotal, formatPrice } from "../price-calculator";
-import type { FederationType, Supplement } from "@/types";
+import type { FederationSubtype, Supplement } from "@/types";
 
-const baseFederation: FederationType = {
-  id: "fed1",
-  name: "Federativa Basica",
+const baseSubtype: FederationSubtype = {
+  id: "sub1",
+  name: "Basica",
   description: "Licencia basica",
   price: 4500,
   active: true,
-  supplements: [],
+  federationTypeId: "fed1",
 };
 
 const supplementA: Supplement = {
@@ -30,17 +30,18 @@ const supplementB: Supplement = {
 };
 
 describe("calculateTotal", () => {
-  it("returns federation price with no supplements", () => {
-    const result = calculateTotal(baseFederation, []);
+  it("returns subtype price with no supplements", () => {
+    const result = calculateTotal(baseSubtype, []);
     expect(result).toEqual({
-      federationPrice: 4500,
+      subtypeName: "Basica",
+      subtypePrice: 4500,
       supplements: [],
       total: 4500,
     });
   });
 
   it("adds single supplement to total", () => {
-    const result = calculateTotal(baseFederation, [supplementA]);
+    const result = calculateTotal(baseSubtype, [supplementA]);
     expect(result.total).toBe(6000);
     expect(result.supplements).toHaveLength(1);
     expect(result.supplements[0]).toEqual({
@@ -50,7 +51,7 @@ describe("calculateTotal", () => {
   });
 
   it("adds multiple supplements to total", () => {
-    const result = calculateTotal(baseFederation, [
+    const result = calculateTotal(baseSubtype, [
       supplementA,
       supplementB,
     ]);
@@ -59,10 +60,11 @@ describe("calculateTotal", () => {
   });
 
   it("returns correct breakdown structure", () => {
-    const result = calculateTotal(baseFederation, [supplementA]);
-    expect(result.federationPrice).toBe(4500);
+    const result = calculateTotal(baseSubtype, [supplementA]);
+    expect(result.subtypeName).toBe("Basica");
+    expect(result.subtypePrice).toBe(4500);
     expect(result.total).toBe(
-      result.federationPrice +
+      result.subtypePrice +
         result.supplements.reduce((sum, s) => sum + s.price, 0),
     );
   });

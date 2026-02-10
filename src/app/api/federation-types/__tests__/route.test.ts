@@ -16,14 +16,16 @@ describe("GET /api/federation-types", () => {
     vi.clearAllMocks();
   });
 
-  it("returns active federation types with supplements", async () => {
+  it("returns active federation types with subtypes and supplements", async () => {
     const mockData = [
       {
         id: "1",
-        name: "Basica",
-        description: "Federativa básica",
-        price: 4500,
+        name: "Nacional",
+        description: "Federativa nacional",
         active: true,
+        subtypes: [
+          { id: "st1", name: "Basica", price: 4500, active: true },
+        ],
         supplements: [
           { id: "s1", name: "Seguro", price: 1000, active: true },
         ],
@@ -40,12 +42,16 @@ describe("GET /api/federation-types", () => {
     expect(mockFindMany).toHaveBeenCalledWith({
       where: { active: true },
       include: {
+        subtypes: {
+          where: { active: true },
+          orderBy: { price: "asc" },
+        },
         supplements: {
           where: { active: true },
           orderBy: { name: "asc" },
         },
       },
-      orderBy: { price: "asc" },
+      orderBy: { name: "asc" },
     });
   });
 

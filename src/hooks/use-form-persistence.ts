@@ -10,12 +10,14 @@ type UseFormPersistenceOptions<T extends FieldValues> = {
   form: UseFormReturn<T>;
   currentStep: number;
   onRestoreStep: (step: number) => void;
+  resetOnRestore?: Partial<T>;
 };
 
 export function useFormPersistence<T extends FieldValues>({
   form,
   currentStep,
   onRestoreStep,
+  resetOnRestore,
 }: UseFormPersistenceOptions<T>) {
   // Restore saved form data on mount
   useEffect(() => {
@@ -24,9 +26,12 @@ export function useFormPersistence<T extends FieldValues>({
       const savedStep = sessionStorage.getItem(STEP_KEY);
       if (savedData) {
         const parsed = JSON.parse(savedData) as T;
+        if (resetOnRestore) {
+          Object.assign(parsed, resetOnRestore);
+        }
         form.reset(parsed);
       }
-      if (savedStep) {
+      if (savedStep && !resetOnRestore) {
         const step = Number(savedStep);
         if (step >= 1 && step <= 3) onRestoreStep(step);
       }

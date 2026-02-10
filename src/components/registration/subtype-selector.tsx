@@ -9,52 +9,59 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import { formatPrice } from "@/helpers/price-calculator";
 import { cn } from "@/lib/utils";
-import type { FederationType } from "@/types";
+import type { FederationSubtype } from "@/types";
 import type { RegistrationInput } from "@/validations/registration";
 
-type FederationSelectorProps = {
-  federationTypes: FederationType[];
+type SubtypeSelectorProps = {
+  subtypes: FederationSubtype[];
 };
 
-export function FederationSelector({
-  federationTypes,
-}: FederationSelectorProps) {
+export function SubtypeSelector({ subtypes }: SubtypeSelectorProps) {
   const form = useFormContext<RegistrationInput>();
+
+  if (subtypes.length === 0) {
+    return null;
+  }
 
   return (
     <FormField
       control={form.control}
-      name="federationTypeId"
+      name="federationSubtypeId"
       render={({ field }) => (
         <FormItem>
-          <h3 className="text-lg font-semibold">Tipo de federativa</h3>
+          <h3 className="text-lg font-semibold">Modalidad</h3>
           <FormControl>
             <RadioGroup
               value={field.value}
               onValueChange={(value) => {
                 field.onChange(value);
-                form.setValue("federationSubtypeId", "");
                 form.setValue("supplementIds", []);
               }}
               className="grid gap-3 sm:grid-cols-2"
             >
-              {federationTypes.map((ft) => (
-                <label key={ft.id} className="cursor-pointer">
+              {subtypes.map((st) => (
+                <label key={st.id} className="cursor-pointer">
                   <Card
                     className={cn(
                       "transition-colors",
-                      field.value === ft.id
+                      field.value === st.id
                         ? "border-primary ring-2 ring-primary/20"
                         : "hover:border-primary/50",
                     )}
                   >
                     <CardContent className="flex items-start gap-3 p-4">
-                      <RadioGroupItem value={ft.id} className="mt-1" />
+                      <RadioGroupItem value={st.id} className="mt-1" />
                       <div className="flex-1">
-                        <span className="font-medium">{ft.name}</span>
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{st.name}</span>
+                          <span className="font-semibold text-primary">
+                            {formatPrice(st.price)}
+                          </span>
+                        </div>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {ft.description}
+                          {st.description}
                         </p>
                       </div>
                     </CardContent>

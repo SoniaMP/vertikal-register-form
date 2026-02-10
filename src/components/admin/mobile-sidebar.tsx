@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ClipboardList, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { LogoutButton } from "./logout-button";
+import { ADMIN_NAV_ITEMS } from "./nav-items";
 
 type Props = {
   userName: string;
@@ -60,14 +61,17 @@ export function MobileSidebar({ userName }: Props) {
           </SheetHeader>
           <Separator />
           <nav className="flex-1 p-2 space-y-1">
-            <Link
-              href="/admin"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            >
-              <ClipboardList className="h-4 w-4" />
-              Miembros
-            </Link>
+            {ADMIN_NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              >
+                <item.icon className="h-4 w-4" />
+                {item.label}
+              </Link>
+            ))}
           </nav>
           <Separator />
           <div className="p-3">

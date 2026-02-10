@@ -42,6 +42,7 @@ export function RegistrationWizard({
       postalCode: "",
       province: "",
       federationTypeId: "",
+      federationSubtypeId: "",
       supplementIds: [],
     },
   });
@@ -50,6 +51,11 @@ export function RegistrationWizard({
     form,
     currentStep,
     onRestoreStep: setCurrentStep,
+    resetOnRestore: {
+      federationTypeId: "",
+      federationSubtypeId: "",
+      supplementIds: [],
+    },
   });
 
   async function handleNextStep() {

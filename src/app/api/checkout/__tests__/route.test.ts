@@ -20,13 +20,13 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/stripe", () => ({
-  stripe: {
+  getStripe: () => ({
     checkout: {
       sessions: {
         create: (...args: unknown[]) => mockSessionCreate(...args),
       },
     },
-  },
+  }),
 }));
 
 function createRequest(body: unknown) {
@@ -49,15 +49,25 @@ const validBody = {
   postalCode: "28001",
   province: "Madrid",
   federationTypeId: "fed-1",
+  federationSubtypeId: "sub-1",
   supplementIds: ["sup-1"],
 };
 
 const mockFederation = {
   id: "fed-1",
-  name: "Basica",
-  description: "Federativa básica",
-  price: 4500,
+  name: "Nacional",
+  description: "Federativa nacional",
   active: true,
+  subtypes: [
+    {
+      id: "sub-1",
+      name: "Basica",
+      description: "Modalidad básica",
+      price: 4500,
+      active: true,
+      federationTypeId: "fed-1",
+    },
+  ],
   supplements: [
     {
       id: "sup-1",
@@ -96,10 +106,26 @@ describe("POST /api/checkout", () => {
     expect(data.error).toBe("Tipo de federativa no encontrado");
   });
 
+  it("returns 400 when subtype not found", async () => {
+    mockFindUnique.mockResolvedValue({
+      ...mockFederation,
+      subtypes: [],
+    });
+
+    const request = createRequest(validBody);
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+    const data = await response.json();
+    expect(data.error).toBe(
+      "Subtipo de federativa no encontrado o no pertenece al tipo seleccionado",
+    );
+  });
+
   it("returns 400 for invalid supplements", async () => {
     mockFindUnique.mockResolvedValue({
       ...mockFederation,
-      supplements: [], // No supplements available
+      supplements: [],
     });
 
     const request = createRequest(validBody);
@@ -133,6 +159,7 @@ describe("POST /api/checkout", () => {
           totalAmount: 5500,
           paymentStatus: "PENDING",
           email: "juan@test.com",
+          federationSubtypeId: "sub-1",
         }),
       }),
     );
@@ -182,7 +209,7 @@ describe("POST /api/checkout", () => {
 
     expect(response.status).toBe(200);
 
-    // Total should be federation price only (4500)
+    // Total should be subtype price only (4500)
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ totalAmount: 4500 }),

@@ -17,12 +17,21 @@ export type Supplement = {
   federationTypeId: string;
 };
 
-export type FederationType = {
+export type FederationSubtype = {
   id: string;
   name: string;
   description: string;
   price: number;
   active: boolean;
+  federationTypeId: string;
+};
+
+export type FederationType = {
+  id: string;
+  name: string;
+  description: string;
+  active: boolean;
+  subtypes: FederationSubtype[];
   supplements: Supplement[];
 };
 
@@ -41,13 +50,15 @@ export type PersonalData = {
 
 export type FederationSelection = {
   federationTypeId: string;
+  federationSubtypeId: string;
   supplementIds: string[];
 };
 
 export type RegistrationFormData = PersonalData & FederationSelection;
 
 export type PriceBreakdown = {
-  federationPrice: number;
+  subtypeName: string;
+  subtypePrice: number;
   supplements: { name: string; price: number }[];
   total: number;
 };
@@ -65,6 +76,7 @@ export type RegistrationRecord = {
   postalCode: string;
   province: string;
   federationTypeId: string;
+  federationSubtypeId: string;
   totalAmount: number;
   paymentStatus: PaymentStatus;
   stripeSessionId: string | null;
@@ -73,6 +85,7 @@ export type RegistrationRecord = {
   createdAt: Date;
   updatedAt: Date;
   federationType: FederationType;
+  federationSubtype: FederationSubtype;
   supplements: RegistrationSupplementRecord[];
 };
 

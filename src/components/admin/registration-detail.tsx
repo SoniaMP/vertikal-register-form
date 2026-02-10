@@ -23,7 +23,8 @@ type RegistrationData = {
   createdAt: Date;
   updatedAt: Date;
   federationType: { name: string };
-  federationSubtype: { name: string; price: number };
+  federationSubtype: { name: string };
+  subtypePrice: number;
   supplements: {
     priceAtTime: number;
     supplement: { name: string };
@@ -115,7 +116,7 @@ function PaymentCard({ registration: r }: Props) {
         <Separator />
         <Field
           label="Federativa"
-          value={`${r.federationType.name} - ${r.federationSubtype.name} — ${formatPrice(r.federationSubtype.price)}`}
+          value={`${r.federationType.name} - ${r.federationSubtype.name} — ${formatPrice(r.subtypePrice)}`}
         />
         {r.supplements.length > 0 && (
           <div>

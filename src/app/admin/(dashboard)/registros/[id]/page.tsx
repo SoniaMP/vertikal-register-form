@@ -21,6 +21,20 @@ export default async function RegistrationDetailPage({ params }: Props) {
 
   if (!registration) notFound();
 
+  const categoryPrice = await prisma.categoryPrice.findUnique({
+    where: {
+      categoryId_subtypeId: {
+        categoryId: registration.categoryId,
+        subtypeId: registration.federationSubtypeId,
+      },
+    },
+  });
+
+  const registrationData = {
+    ...registration,
+    subtypePrice: categoryPrice?.price ?? 0,
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
@@ -34,7 +48,7 @@ export default async function RegistrationDetailPage({ params }: Props) {
           {registration.firstName} {registration.lastName}
         </h1>
       </div>
-      <RegistrationDetail registration={registration} />
+      <RegistrationDetail registration={registrationData} />
     </div>
   );
 }

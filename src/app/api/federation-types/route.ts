@@ -7,10 +7,19 @@ export async function GET() {
     include: {
       subtypes: {
         where: { active: true },
-        orderBy: { price: "asc" },
+        orderBy: { name: "asc" },
+      },
+      categories: {
+        where: { active: true },
+        include: { prices: true },
+        orderBy: { name: "asc" },
       },
       supplements: {
         where: { active: true },
+        include: { supplementGroup: true },
+        orderBy: { name: "asc" },
+      },
+      supplementGroups: {
         orderBy: { name: "asc" },
       },
     },

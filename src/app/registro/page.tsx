@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { getMembershipFee } from "@/lib/settings";
 import { RegistrationWizard } from "@/components/registration/registration-wizard";
 import { Card, CardContent } from "@/components/ui/card";
 import type { FederationType } from "@/types";
@@ -16,15 +17,26 @@ export default async function RegistroPage() {
     include: {
       subtypes: {
         where: { active: true },
-        orderBy: { price: "asc" },
+        orderBy: { createdAt: "asc" },
       },
       supplements: {
         where: { active: true },
+        include: { supplementGroup: true },
         orderBy: { name: "asc" },
+      },
+      categories: {
+        where: { active: true },
+        include: { prices: true },
+        orderBy: { createdAt: "asc" },
+      },
+      supplementGroups: {
+        orderBy: { createdAt: "asc" },
       },
     },
     orderBy: { name: "asc" },
   })) as FederationType[];
+
+  const membershipFee = await getMembershipFee();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -44,7 +56,7 @@ export default async function RegistroPage() {
       </div>
       <Card>
         <CardContent className="pt-6">
-          <RegistrationWizard federationTypes={federationTypes} />
+          <RegistrationWizard federationTypes={federationTypes} membershipFee={membershipFee} />
         </CardContent>
       </Card>
     </div>

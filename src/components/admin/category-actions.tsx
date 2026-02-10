@@ -1,26 +1,23 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { FederationType } from "@prisma/client";
+import type { Category } from "@prisma/client";
 import { Pencil, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toggleFederationTypeActive } from "@/app/admin/(dashboard)/tipos-federacion/actions";
-import { FederationTypeFormDialog } from "./federation-type-form-dialog";
+import { toggleCategoryActive } from "@/app/admin/(dashboard)/tipos-federacion/actions";
+import { CategoryFormDialog } from "./category-form-dialog";
 
 type Props = {
-  federationType: FederationType;
+  category: Category;
 };
 
-export function FederationTypeActions({ federationType }: Props) {
+export function CategoryActions({ category }: Props) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleToggle() {
     startTransition(async () => {
-      await toggleFederationTypeActive(
-        federationType.id,
-        !federationType.active,
-      );
+      await toggleCategoryActive(category.id, !category.active);
     });
   }
 
@@ -31,9 +28,10 @@ export function FederationTypeActions({ federationType }: Props) {
         variant="ghost"
         size="icon"
         onClick={() => setIsEditOpen(true)}
-        aria-label="Editar"
+        aria-label="Editar categoría"
+        className="h-7 w-7"
       >
-        <Pencil className="h-4 w-4" />
+        <Pencil className="h-3 w-3" />
       </Button>
       <Button
         type="button"
@@ -41,14 +39,16 @@ export function FederationTypeActions({ federationType }: Props) {
         size="icon"
         onClick={handleToggle}
         disabled={isPending}
-        aria-label={federationType.active ? "Desactivar" : "Activar"}
+        aria-label={category.active ? "Desactivar" : "Activar"}
+        className="h-7 w-7"
       >
-        <Power className="h-4 w-4" />
+        <Power className="h-3 w-3" />
       </Button>
-      <FederationTypeFormDialog
+      <CategoryFormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        federationType={federationType}
+        federationTypeId={category.federationTypeId}
+        category={category}
       />
     </div>
   );

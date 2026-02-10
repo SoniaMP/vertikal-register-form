@@ -1,4 +1,4 @@
-import { ClipboardList, Shield } from "lucide-react";
+import { ClipboardList, Settings, Shield } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type NavItem = {
@@ -10,4 +10,5 @@ export type NavItem = {
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Miembros", icon: ClipboardList },
   { href: "/admin/tipos-federacion", label: "Tipos federativa", icon: Shield },
+  { href: "/admin/ajustes", label: "Ajustes", icon: Settings },
 ];

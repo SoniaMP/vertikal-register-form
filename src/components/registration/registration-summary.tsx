@@ -10,6 +10,7 @@ import type { RegistrationInput } from "@/validations/registration";
 
 type RegistrationSummaryProps = {
   federationTypes: FederationType[];
+  membershipFee: number;
   onEdit: (step: number) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
@@ -17,6 +18,7 @@ type RegistrationSummaryProps = {
 
 export function RegistrationSummary({
   federationTypes,
+  membershipFee,
   onEdit,
   onSubmit,
   isSubmitting,
@@ -30,13 +32,21 @@ export function RegistrationSummary({
   const subtype = federation?.subtypes.find(
     (st) => st.id === data.federationSubtypeId,
   );
+  const category = federation?.categories.find(
+    (c) => c.id === data.categoryId,
+  );
+  const categoryPrice = category?.prices.find(
+    (p) => p.subtypeId === data.federationSubtypeId,
+  );
   const selectedSupplements =
     federation?.supplements.filter((s) =>
       data.supplementIds?.includes(s.id),
     ) ?? [];
-  const breakdown = subtype
-    ? calculateTotal(subtype, selectedSupplements)
-    : null;
+
+  const breakdown =
+    category && categoryPrice
+      ? calculateTotal(category.name, categoryPrice.price, selectedSupplements, membershipFee)
+      : null;
 
   return (
     <div className="space-y-6">
@@ -58,6 +68,9 @@ export function RegistrationSummary({
         <SummaryRow label="Tipo" value={federation?.name ?? ""} />
         {subtype && (
           <SummaryRow label="Modalidad" value={subtype.name} />
+        )}
+        {category && (
+          <SummaryRow label="Categoría" value={category.name} />
         )}
         {selectedSupplements.length > 0 && (
           <SummaryRow

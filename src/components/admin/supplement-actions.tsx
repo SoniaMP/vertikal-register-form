@@ -1,17 +1,27 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { Supplement } from "@prisma/client";
+import type { Supplement, SupplementGroup } from "@prisma/client";
 import { Pencil, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toggleSupplementActive } from "@/app/admin/(dashboard)/tipos-federacion/actions";
 import { SupplementFormDialog } from "./supplement-form-dialog";
 
-type Props = {
-  supplement: Supplement;
+type SupplementGroupWithSupplements = SupplementGroup & {
+  supplements: Supplement[];
 };
 
-export function SupplementActions({ supplement }: Props) {
+type Props = {
+  supplement: Supplement;
+  supplementGroups: SupplementGroupWithSupplements[];
+  federationTypeId: string;
+};
+
+export function SupplementActions({
+  supplement,
+  supplementGroups,
+  federationTypeId,
+}: Props) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -24,6 +34,7 @@ export function SupplementActions({ supplement }: Props) {
   return (
     <div className="flex items-center gap-1">
       <Button
+        type="button"
         variant="ghost"
         size="icon"
         onClick={() => setIsEditOpen(true)}
@@ -33,6 +44,7 @@ export function SupplementActions({ supplement }: Props) {
         <Pencil className="h-3 w-3" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="icon"
         onClick={handleToggle}
@@ -45,8 +57,9 @@ export function SupplementActions({ supplement }: Props) {
       <SupplementFormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        federationTypeId={supplement.federationTypeId}
+        federationTypeId={federationTypeId}
         supplement={supplement}
+        supplementGroups={supplementGroups}
       />
     </div>
   );

@@ -5,7 +5,6 @@ import type { FederationSubtype } from "@prisma/client";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/helpers/price-calculator";
 import { SubtypeActions } from "./subtype-actions";
 import { SubtypeFormDialog } from "./subtype-form-dialog";
 
@@ -68,9 +67,6 @@ function SubtypeRow({ subtype }: { subtype: FederationSubtype }) {
     <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
       <div className="flex items-center gap-3 min-w-0">
         <span className="font-medium truncate">{subtype.name}</span>
-        <span className="text-muted-foreground">
-          {formatPrice(subtype.price)}
-        </span>
         <Badge variant={subtype.active ? "default" : "secondary"}>
           {subtype.active ? "Activo" : "Inactivo"}
         </Badge>

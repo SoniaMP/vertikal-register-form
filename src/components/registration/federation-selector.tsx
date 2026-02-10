@@ -35,6 +35,7 @@ export function FederationSelector({
               onValueChange={(value) => {
                 field.onChange(value);
                 form.setValue("federationSubtypeId", "");
+                form.setValue("categoryId", "");
                 form.setValue("supplementIds", []);
               }}
               className="grid gap-3 sm:grid-cols-2"

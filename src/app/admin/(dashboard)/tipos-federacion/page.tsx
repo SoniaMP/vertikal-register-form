@@ -7,7 +7,18 @@ export default async function FederationTypesPage() {
     include: {
       _count: { select: { supplements: true, registrations: true } },
       subtypes: { orderBy: { createdAt: "asc" } },
-      supplements: { orderBy: { createdAt: "asc" } },
+      supplements: {
+        orderBy: { createdAt: "asc" },
+        include: { supplementGroup: true },
+      },
+      categories: {
+        orderBy: { createdAt: "asc" },
+        include: { prices: true },
+      },
+      supplementGroups: {
+        orderBy: { createdAt: "asc" },
+        include: { supplements: true },
+      },
     },
     orderBy: { createdAt: "asc" },
   });

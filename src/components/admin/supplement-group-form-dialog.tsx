@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import type { FederationSubtype } from "@prisma/client";
+import type { SupplementGroup } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -12,37 +12,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  createSubtype,
-  updateSubtype,
+  createSupplementGroup,
+  updateSupplementGroup,
 } from "@/app/admin/(dashboard)/tipos-federacion/actions";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   federationTypeId: string;
-  subtype?: FederationSubtype;
+  group?: SupplementGroup;
 };
 
 const INITIAL_STATE = { success: false, error: undefined };
 
-export function SubtypeFormDialog({
+export function SupplementGroupFormDialog({
   open,
   onOpenChange,
   federationTypeId,
-  subtype,
+  group,
 }: Props) {
-  const isEditing = !!subtype;
+  const isEditing = !!group;
 
   const action = isEditing
-    ? updateSubtype.bind(null, subtype.id)
-    : createSubtype.bind(null, federationTypeId);
+    ? updateSupplementGroup.bind(null, group.id)
+    : createSupplementGroup.bind(null, federationTypeId);
 
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
 
   useEffect(() => {
-    if (state.success) {
-      onOpenChange(false);
-    }
+    if (state.success) onOpenChange(false);
   }, [state, onOpenChange]);
 
   return (
@@ -50,28 +48,30 @@ export function SubtypeFormDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Editar subtipo" : "Nuevo subtipo"}
+            {isEditing ? "Editar grupo" : "Nuevo grupo de suplementos"}
           </DialogTitle>
         </DialogHeader>
         <form action={formAction} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="sub-name">Nombre</Label>
+            <Label htmlFor="grp-name">Nombre</Label>
             <Input
-              id="sub-name"
+              id="grp-name"
               name="name"
-              defaultValue={subtype?.name ?? ""}
+              defaultValue={group?.name ?? ""}
               required
               minLength={2}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sub-description">Descripción</Label>
+            <Label htmlFor="grp-price">Precio del grupo (EUR)</Label>
             <Input
-              id="sub-description"
-              name="description"
-              defaultValue={subtype?.description ?? ""}
+              id="grp-price"
+              name="price"
+              type="number"
+              step="0.01"
+              min="0.01"
+              defaultValue={group ? (group.price / 100).toFixed(2) : ""}
               required
-              minLength={5}
             />
           </div>
           {state.error && (

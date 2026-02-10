@@ -8,22 +8,46 @@ export const PAYMENT_STATUS = {
 export type PaymentStatus =
   (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
 
+export type SupplementGroup = {
+  id: string;
+  name: string;
+  price: number;
+  federationTypeId: string;
+};
+
 export type Supplement = {
   id: string;
   name: string;
   description: string;
-  price: number;
+  price: number | null;
   active: boolean;
   federationTypeId: string;
+  supplementGroupId: string | null;
+  supplementGroup: SupplementGroup | null;
 };
 
 export type FederationSubtype = {
   id: string;
   name: string;
   description: string;
-  price: number;
   active: boolean;
   federationTypeId: string;
+};
+
+export type CategoryPrice = {
+  id: string;
+  categoryId: string;
+  subtypeId: string;
+  price: number;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  description: string;
+  active: boolean;
+  federationTypeId: string;
+  prices: CategoryPrice[];
 };
 
 export type FederationType = {
@@ -33,6 +57,8 @@ export type FederationType = {
   active: boolean;
   subtypes: FederationSubtype[];
   supplements: Supplement[];
+  categories: Category[];
+  supplementGroups: SupplementGroup[];
 };
 
 export type PersonalData = {
@@ -51,15 +77,23 @@ export type PersonalData = {
 export type FederationSelection = {
   federationTypeId: string;
   federationSubtypeId: string;
+  categoryId: string;
   supplementIds: string[];
 };
 
 export type RegistrationFormData = PersonalData & FederationSelection;
 
+export type SupplementBreakdownItem = {
+  name: string;
+  price: number;
+  isGroup: boolean;
+};
+
 export type PriceBreakdown = {
-  subtypeName: string;
-  subtypePrice: number;
-  supplements: { name: string; price: number }[];
+  categoryName: string;
+  categoryPrice: number;
+  membershipFee: number;
+  supplements: SupplementBreakdownItem[];
   total: number;
 };
 
@@ -77,6 +111,7 @@ export type RegistrationRecord = {
   province: string;
   federationTypeId: string;
   federationSubtypeId: string;
+  categoryId: string;
   totalAmount: number;
   paymentStatus: PaymentStatus;
   stripeSessionId: string | null;
@@ -86,6 +121,7 @@ export type RegistrationRecord = {
   updatedAt: Date;
   federationType: FederationType;
   federationSubtype: FederationSubtype;
+  category: Category;
   supplements: RegistrationSupplementRecord[];
 };
 

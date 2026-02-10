@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
-import type { Supplement } from "@prisma/client";
+import { useActionState, useEffect, useState } from "react";
+import type { Supplement, SupplementGroup } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -12,26 +12,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   createSupplement,
   updateSupplement,
 } from "@/app/admin/(dashboard)/tipos-federacion/actions";
+
+type SupplementGroupWithSupplements = SupplementGroup & {
+  supplements: Supplement[];
+};
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   federationTypeId: string;
   supplement?: Supplement;
+  supplementGroups?: SupplementGroupWithSupplements[];
 };
 
 const INITIAL_STATE = { success: false, error: undefined };
+const NO_GROUP = "__none__";
 
 export function SupplementFormDialog({
   open,
   onOpenChange,
   federationTypeId,
   supplement,
+  supplementGroups = [],
 }: Props) {
   const isEditing = !!supplement;
+  const [selectedGroup, setSelectedGroup] = useState(
+    supplement?.supplementGroupId ?? NO_GROUP,
+  );
+
+  const hasGroup = selectedGroup !== NO_GROUP;
 
   const action = isEditing
     ? updateSupplement.bind(null, supplement.id)
@@ -40,10 +59,14 @@ export function SupplementFormDialog({
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
 
   useEffect(() => {
-    if (state.success) {
-      onOpenChange(false);
-    }
+    if (state.success) onOpenChange(false);
   }, [state, onOpenChange]);
+
+  useEffect(() => {
+    if (open) {
+      setSelectedGroup(supplement?.supplementGroupId ?? NO_GROUP);
+    }
+  }, [open, supplement]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,20 +97,45 @@ export function SupplementFormDialog({
               minLength={5}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="sup-price">Precio (EUR)</Label>
-            <Input
-              id="sup-price"
-              name="price"
-              type="number"
-              step="0.01"
-              min="0.01"
-              defaultValue={
-                supplement ? (supplement.price / 100).toFixed(2) : ""
-              }
-              required
-            />
-          </div>
+          {supplementGroups.length > 0 && (
+            <div className="space-y-2">
+              <Label>Grupo (opcional)</Label>
+              <input
+                type="hidden"
+                name="supplementGroupId"
+                value={hasGroup ? selectedGroup : ""}
+              />
+              <Select value={selectedGroup} onValueChange={setSelectedGroup}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sin grupo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_GROUP}>Sin grupo</SelectItem>
+                  {supplementGroups.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      {g.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          {!hasGroup && (
+            <div className="space-y-2">
+              <Label htmlFor="sup-price">Precio (EUR)</Label>
+              <Input
+                id="sup-price"
+                name="price"
+                type="number"
+                step="0.01"
+                min="0.01"
+                defaultValue={
+                  supplement?.price ? (supplement.price / 100).toFixed(2) : ""
+                }
+                required
+              />
+            </div>
+          )}
           {state.error && (
             <p className="text-sm text-destructive">{state.error}</p>
           )}

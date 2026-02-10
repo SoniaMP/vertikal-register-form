@@ -14,12 +14,19 @@ export function PriceSummary({ breakdown }: PriceSummaryProps) {
       <h4 className="mb-3 font-semibold">Resumen de precio</h4>
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span>{breakdown.subtypeName}</span>
-          <span>{formatPrice(breakdown.subtypePrice)}</span>
+          <span>{breakdown.categoryName}</span>
+          <span>{formatPrice(breakdown.categoryPrice)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Cuota de socio</span>
+          <span>{formatPrice(breakdown.membershipFee)}</span>
         </div>
         {breakdown.supplements.map((s) => (
           <div key={s.name} className="flex justify-between text-muted-foreground">
-            <span>{s.name}</span>
+            <span>
+              {s.name}
+              {s.isGroup ? " (grupo)" : ""}
+            </span>
             <span>+{formatPrice(s.price)}</span>
           </div>
         ))}

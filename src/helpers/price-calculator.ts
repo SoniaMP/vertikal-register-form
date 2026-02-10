@@ -1,24 +1,38 @@
-import type { FederationSubtype, PriceBreakdown, Supplement } from "@/types";
+import type { PriceBreakdown, Supplement, SupplementBreakdownItem } from "@/types";
 
 export function calculateTotal(
-  subtype: FederationSubtype,
+  categoryName: string,
+  categoryPrice: number,
   selectedSupplements: Supplement[],
+  membershipFee: number,
 ): PriceBreakdown {
-  const supplements = selectedSupplements.map((s) => ({
-    name: s.name,
-    price: s.price,
-  }));
+  const supplements: SupplementBreakdownItem[] = [];
+  const seenGroupIds = new Set<string>();
+  let supplementsTotal = 0;
 
-  const supplementsTotal = selectedSupplements.reduce(
-    (sum, s) => sum + s.price,
-    0,
-  );
+  for (const s of selectedSupplements) {
+    if (s.supplementGroupId && s.supplementGroup) {
+      if (!seenGroupIds.has(s.supplementGroupId)) {
+        seenGroupIds.add(s.supplementGroupId);
+        supplements.push({
+          name: s.supplementGroup.name,
+          price: s.supplementGroup.price,
+          isGroup: true,
+        });
+        supplementsTotal += s.supplementGroup.price;
+      }
+    } else if (s.price !== null) {
+      supplements.push({ name: s.name, price: s.price, isGroup: false });
+      supplementsTotal += s.price;
+    }
+  }
 
   return {
-    subtypeName: subtype.name,
-    subtypePrice: subtype.price,
+    categoryName,
+    categoryPrice,
+    membershipFee,
     supplements,
-    total: subtype.price + supplementsTotal,
+    total: categoryPrice + membershipFee + supplementsTotal,
   };
 }
 

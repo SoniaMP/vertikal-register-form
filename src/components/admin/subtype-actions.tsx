@@ -24,6 +24,7 @@ export function SubtypeActions({ subtype }: Props) {
   return (
     <div className="flex items-center gap-1">
       <Button
+        type="button"
         variant="ghost"
         size="icon"
         onClick={() => setIsEditOpen(true)}
@@ -33,6 +34,7 @@ export function SubtypeActions({ subtype }: Props) {
         <Pencil className="h-3 w-3" />
       </Button>
       <Button
+        type="button"
         variant="ghost"
         size="icon"
         onClick={handleToggle}

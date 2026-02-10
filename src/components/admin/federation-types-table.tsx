@@ -1,6 +1,13 @@
 "use client";
 
-import type { FederationType, FederationSubtype, Supplement } from "@prisma/client";
+import type {
+  FederationType,
+  FederationSubtype,
+  Supplement,
+  Category,
+  CategoryPrice,
+  SupplementGroup,
+} from "@prisma/client";
 import {
   Table,
   TableBody,
@@ -13,11 +20,25 @@ import { Badge } from "@/components/ui/badge";
 import { FederationTypeActions } from "./federation-type-actions";
 import { SubtypesSection } from "./subtypes-section";
 import { SupplementsSection } from "./supplements-section";
+import { CategoriesSection } from "./categories-section";
+import { SupplementGroupsSection } from "./supplement-groups-section";
 
-type FederationTypeWithRelations = FederationType & {
+type SupplementWithGroup = Supplement & {
+  supplementGroup: SupplementGroup | null;
+};
+
+type CategoryWithPrices = Category & { prices: CategoryPrice[] };
+
+type SupplementGroupWithSupplements = SupplementGroup & {
+  supplements: Supplement[];
+};
+
+export type FederationTypeWithRelations = FederationType & {
   _count: { supplements: number; registrations: number };
   subtypes: FederationSubtype[];
-  supplements: Supplement[];
+  supplements: SupplementWithGroup[];
+  categories: CategoryWithPrices[];
+  supplementGroups: SupplementGroupWithSupplements[];
 };
 
 type Props = {
@@ -35,14 +56,11 @@ export function FederationTypesTable({ federationTypes }: Props) {
 
   return (
     <div className="space-y-4">
-      {/* Mobile card list */}
       <div className="space-y-4 md:hidden">
         {federationTypes.map((ft) => (
           <MobileCard key={ft.id} federationType={ft} />
         ))}
       </div>
-
-      {/* Desktop table */}
       <div className="hidden md:block space-y-6">
         {federationTypes.map((ft) => (
           <DesktopRow key={ft.id} federationType={ft} />
@@ -91,9 +109,19 @@ function DesktopRow({
         federationTypeId={ft.id}
         subtypes={ft.subtypes}
       />
+      <CategoriesSection
+        federationTypeId={ft.id}
+        categories={ft.categories}
+        subtypes={ft.subtypes}
+      />
+      <SupplementGroupsSection
+        federationTypeId={ft.id}
+        supplementGroups={ft.supplementGroups}
+      />
       <SupplementsSection
         federationTypeId={ft.id}
         supplements={ft.supplements}
+        supplementGroups={ft.supplementGroups}
       />
     </div>
   );
@@ -125,9 +153,19 @@ function MobileCard({
         federationTypeId={ft.id}
         subtypes={ft.subtypes}
       />
+      <CategoriesSection
+        federationTypeId={ft.id}
+        categories={ft.categories}
+        subtypes={ft.subtypes}
+      />
+      <SupplementGroupsSection
+        federationTypeId={ft.id}
+        supplementGroups={ft.supplementGroups}
+      />
       <SupplementsSection
         federationTypeId={ft.id}
         supplements={ft.supplements}
+        supplementGroups={ft.supplementGroups}
       />
     </div>
   );

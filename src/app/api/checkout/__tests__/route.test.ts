@@ -29,6 +29,10 @@ vi.mock("@/lib/stripe", () => ({
   }),
 }));
 
+vi.mock("@/lib/settings", () => ({
+  getMembershipFee: () => Promise.resolve(2000),
+}));
+
 function createRequest(body: unknown) {
   return new NextRequest("http://localhost:3000/api/checkout", {
     method: "POST",
@@ -50,6 +54,7 @@ const validBody = {
   province: "Madrid",
   federationTypeId: "fed-1",
   federationSubtypeId: "sub-1",
+  categoryId: "cat-1",
   supplementIds: ["sup-1"],
 };
 
@@ -63,9 +68,18 @@ const mockFederation = {
       id: "sub-1",
       name: "Basica",
       description: "Modalidad básica",
-      price: 4500,
       active: true,
       federationTypeId: "fed-1",
+    },
+  ],
+  categories: [
+    {
+      id: "cat-1",
+      name: "Adulto",
+      description: "Categoría adulto",
+      active: true,
+      federationTypeId: "fed-1",
+      prices: [{ id: "cp-1", categoryId: "cat-1", subtypeId: "sub-1", price: 4500 }],
     },
   ],
   supplements: [
@@ -76,8 +90,11 @@ const mockFederation = {
       price: 1000,
       active: true,
       federationTypeId: "fed-1",
+      supplementGroupId: null,
+      supplementGroup: null,
     },
   ],
+  supplementGroups: [],
 };
 
 describe("POST /api/checkout", () => {
@@ -117,9 +134,7 @@ describe("POST /api/checkout", () => {
 
     expect(response.status).toBe(400);
     const data = await response.json();
-    expect(data.error).toBe(
-      "Subtipo de federativa no encontrado o no pertenece al tipo seleccionado",
-    );
+    expect(data.error).toBe("Subtipo de federativa no encontrado");
   });
 
   it("returns 400 for invalid supplements", async () => {
@@ -152,19 +167,19 @@ describe("POST /api/checkout", () => {
     const data = await response.json();
     expect(data.url).toBe("https://checkout.stripe.com/pay/cs_test_123");
 
-    // Verify registration was created with correct total (4500 + 1000 = 5500)
+    // Total: category 4500 + membership 2000 + supplement 1000 = 7500
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          totalAmount: 5500,
+          totalAmount: 7500,
           paymentStatus: "PENDING",
           email: "juan@test.com",
           federationSubtypeId: "sub-1",
+          categoryId: "cat-1",
         }),
       }),
     );
 
-    // Verify Stripe session ID was stored
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: "reg-123" },
       data: { stripeSessionId: "cs_test_123" },
@@ -187,7 +202,6 @@ describe("POST /api/checkout", () => {
     expect(data.error).toContain("Error al conectar con la pasarela de pago");
     expect(data.error).toContain("Invalid API Key");
 
-    // Registration should be marked as FAILED
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: "reg-err" },
       data: { paymentStatus: "FAILED" },
@@ -209,10 +223,10 @@ describe("POST /api/checkout", () => {
 
     expect(response.status).toBe(200);
 
-    // Total should be subtype price only (4500)
+    // Total: category 4500 + membership 2000 = 6500
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ totalAmount: 4500 }),
+        data: expect.objectContaining({ totalAmount: 6500 }),
       }),
     );
   });

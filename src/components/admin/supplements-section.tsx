@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Supplement } from "@prisma/client";
+import type { Supplement, SupplementGroup } from "@prisma/client";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,12 +9,25 @@ import { formatPrice } from "@/helpers/price-calculator";
 import { SupplementActions } from "./supplement-actions";
 import { SupplementFormDialog } from "./supplement-form-dialog";
 
-type Props = {
-  federationTypeId: string;
+type SupplementWithGroup = Supplement & {
+  supplementGroup: SupplementGroup | null;
+};
+
+type SupplementGroupWithSupplements = SupplementGroup & {
   supplements: Supplement[];
 };
 
-export function SupplementsSection({ federationTypeId, supplements }: Props) {
+type Props = {
+  federationTypeId: string;
+  supplements: SupplementWithGroup[];
+  supplementGroups: SupplementGroupWithSupplements[];
+};
+
+export function SupplementsSection({
+  federationTypeId,
+  supplements,
+  supplementGroups,
+}: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -41,7 +54,12 @@ export function SupplementsSection({ federationTypeId, supplements }: Props) {
             </p>
           )}
           {supplements.map((sup) => (
-            <SupplementRow key={sup.id} supplement={sup} />
+            <SupplementRow
+              key={sup.id}
+              supplement={sup}
+              supplementGroups={supplementGroups}
+              federationTypeId={federationTypeId}
+            />
           ))}
           <Button
             variant="outline"
@@ -56,6 +74,7 @@ export function SupplementsSection({ federationTypeId, supplements }: Props) {
             open={isCreateOpen}
             onOpenChange={setIsCreateOpen}
             federationTypeId={federationTypeId}
+            supplementGroups={supplementGroups}
           />
         </div>
       )}
@@ -63,19 +82,37 @@ export function SupplementsSection({ federationTypeId, supplements }: Props) {
   );
 }
 
-function SupplementRow({ supplement }: { supplement: Supplement }) {
+function SupplementRow({
+  supplement,
+  supplementGroups,
+  federationTypeId,
+}: {
+  supplement: SupplementWithGroup;
+  supplementGroups: SupplementGroupWithSupplements[];
+  federationTypeId: string;
+}) {
   return (
     <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
       <div className="flex items-center gap-3 min-w-0">
         <span className="font-medium truncate">{supplement.name}</span>
-        <span className="text-muted-foreground">
-          {formatPrice(supplement.price)}
-        </span>
+        {supplement.supplementGroup ? (
+          <Badge variant="outline">
+            Grupo: {supplement.supplementGroup.name}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground">
+            {supplement.price !== null ? formatPrice(supplement.price) : "—"}
+          </span>
+        )}
         <Badge variant={supplement.active ? "default" : "secondary"}>
           {supplement.active ? "Activo" : "Inactivo"}
         </Badge>
       </div>
-      <SupplementActions supplement={supplement} />
+      <SupplementActions
+        supplement={supplement}
+        supplementGroups={supplementGroups}
+        federationTypeId={federationTypeId}
+      />
     </div>
   );
 }

@@ -19,10 +19,12 @@ import type { FederationType } from "@/types";
 
 type RegistrationWizardProps = {
   federationTypes: FederationType[];
+  membershipFee: number;
 };
 
 export function RegistrationWizard({
   federationTypes,
+  membershipFee,
 }: RegistrationWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +45,7 @@ export function RegistrationWizard({
       province: "",
       federationTypeId: "",
       federationSubtypeId: "",
+      categoryId: "",
       supplementIds: [],
     },
   });
@@ -54,6 +57,7 @@ export function RegistrationWizard({
     resetOnRestore: {
       federationTypeId: "",
       federationSubtypeId: "",
+      categoryId: "",
       supplementIds: [],
     },
   });
@@ -131,6 +135,7 @@ export function RegistrationWizard({
         {currentStep === 2 && (
           <FederationStep
             federationTypes={federationTypes}
+            membershipFee={membershipFee}
             onNext={handleNextStep}
             onBack={() => setCurrentStep(1)}
           />
@@ -139,6 +144,7 @@ export function RegistrationWizard({
         {currentStep === 3 && (
           <RegistrationSummary
             federationTypes={federationTypes}
+            membershipFee={membershipFee}
             onEdit={setCurrentStep}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}

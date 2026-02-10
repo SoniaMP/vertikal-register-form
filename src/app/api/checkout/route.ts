@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { registrationSchema } from "@/validations/registration";
 import { calculateTotal } from "@/helpers/price-calculator";
-import type { FederationType, FederationSubtype } from "@/types";
+import { getMembershipFee } from "@/lib/settings";
+import type { Supplement } from "@/types";
 
 export async function POST(request: NextRequest) {
   const stripe = getStripe();
@@ -19,13 +20,21 @@ export async function POST(request: NextRequest) {
 
   const data = parsed.data;
 
-  const federationType = (await prisma.federationType.findUnique({
+  const federationType = await prisma.federationType.findUnique({
     where: { id: data.federationTypeId, active: true },
     include: {
       subtypes: { where: { active: true } },
-      supplements: { where: { active: true } },
+      categories: {
+        where: { active: true },
+        include: { prices: true },
+      },
+      supplements: {
+        where: { active: true },
+        include: { supplementGroup: true },
+      },
+      supplementGroups: true,
     },
-  })) as FederationType | null;
+  });
 
   if (!federationType) {
     return NextResponse.json(
@@ -36,11 +45,33 @@ export async function POST(request: NextRequest) {
 
   const subtype = federationType.subtypes.find(
     (s) => s.id === data.federationSubtypeId,
-  ) as FederationSubtype | undefined;
+  );
 
   if (!subtype) {
     return NextResponse.json(
-      { error: "Subtipo de federativa no encontrado o no pertenece al tipo seleccionado" },
+      { error: "Subtipo de federativa no encontrado" },
+      { status: 400 },
+    );
+  }
+
+  const category = federationType.categories.find(
+    (c) => c.id === data.categoryId,
+  );
+
+  if (!category) {
+    return NextResponse.json(
+      { error: "Categoría no encontrada" },
+      { status: 400 },
+    );
+  }
+
+  const categoryPrice = category.prices.find(
+    (p) => p.subtypeId === subtype.id,
+  );
+
+  if (!categoryPrice) {
+    return NextResponse.json(
+      { error: "No hay precio definido para esta combinación de categoría y subtipo" },
       { status: 400 },
     );
   }
@@ -56,7 +87,32 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const breakdown = calculateTotal(subtype, validSupplements);
+  const supplementsTyped: Supplement[] = validSupplements.map((s) => ({
+    id: s.id,
+    name: s.name,
+    description: s.description,
+    price: s.price,
+    active: s.active,
+    federationTypeId: s.federationTypeId,
+    supplementGroupId: s.supplementGroupId,
+    supplementGroup: s.supplementGroup
+      ? {
+          id: s.supplementGroup.id,
+          name: s.supplementGroup.name,
+          price: s.supplementGroup.price,
+          federationTypeId: s.supplementGroup.federationTypeId,
+        }
+      : null,
+  }));
+
+  const membershipFee = await getMembershipFee();
+
+  const breakdown = calculateTotal(
+    category.name,
+    categoryPrice.price,
+    supplementsTyped,
+    membershipFee,
+  );
 
   const registration = await prisma.registration.create({
     data: {
@@ -72,12 +128,13 @@ export async function POST(request: NextRequest) {
       province: data.province,
       federationTypeId: data.federationTypeId,
       federationSubtypeId: data.federationSubtypeId,
+      categoryId: data.categoryId,
       totalAmount: breakdown.total,
       paymentStatus: "PENDING",
       supplements: {
         create: validSupplements.map((s) => ({
           supplementId: s.id,
-          priceAtTime: s.price,
+          priceAtTime: s.price ?? 0,
         })),
       },
     },
@@ -87,12 +144,22 @@ export async function POST(request: NextRequest) {
     {
       price_data: {
         currency: "eur",
-        product_data: { name: `${federationType.name} - ${subtype.name}` },
-        unit_amount: subtype.price,
+        product_data: {
+          name: `${federationType.name} - ${subtype.name} - ${category.name}`,
+        },
+        unit_amount: categoryPrice.price,
       },
       quantity: 1,
     },
-    ...validSupplements.map((s) => ({
+    {
+      price_data: {
+        currency: "eur",
+        product_data: { name: "Cuota de socio" },
+        unit_amount: membershipFee,
+      },
+      quantity: 1,
+    },
+    ...breakdown.supplements.map((s) => ({
       price_data: {
         currency: "eur",
         product_data: { name: s.name },
@@ -102,7 +169,8 @@ export async function POST(request: NextRequest) {
     })),
   ];
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
 
   try {
     const session = await stripe.checkout.sessions.create({

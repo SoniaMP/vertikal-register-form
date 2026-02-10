@@ -237,28 +237,119 @@ En la landing estática de Hostinger, los botones de acción (CTA) deben enlazar
 
 ---
 
-## Flujo de despliegues futuros
+## Redespliegue (sin migraciones de BD)
 
 ```bash
 ssh deploy@TU_IP_IONOS
 cd /opt/vertikal
+
 git pull origin main
-docker compose build
+docker compose down
+docker compose build --no-cache
 docker compose up -d
-docker compose exec app npx prisma migrate deploy   # si hay migraciones nuevas
+
+# Verificar
+docker compose logs app
+```
+
+## Redespliegue (con migraciones de BD)
+
+Si hay nuevos ficheros en `prisma/migrations/`, hacer backup antes.
+
+```bash
+ssh deploy@TU_IP_IONOS
+cd /opt/vertikal
+
+# 1. Backup de la BD
+docker compose cp app:/app/data/vertikal.db ./backups/vertikal-$(date +%Y%m%d-%H%M%S).db
+
+# 2. Pull, build, deploy
+git pull origin main
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+
+# 3. Verificar migración
+docker compose logs migrate
+
+# 4. Verificar app
+docker compose logs app
+```
+
+El servicio `migrate` ejecuta `prisma migrate deploy` automáticamente antes de que arranque `app`.
+
+## Rollback (si la migración falla)
+
+```bash
+docker compose down
+
+# Restaurar backup al volumen
+docker compose run --rm \
+  -v ./backups:/backups app \
+  sh -c "cp /backups/vertikal-YYYYMMDD-HHMMSS.db /app/data/vertikal.db"
+
+# Volver al commit anterior
+git log --oneline -5          # buscar el último commit bueno
+git checkout <commit-hash>
+
+# Rebuild y restart
+docker compose build --no-cache
+docker compose up -d
+```
+
+## Comandos útiles
+
+```bash
+# Logs en tiempo real
+docker compose logs -f app
+
+# Reiniciar solo la app (sin rebuild)
+docker compose restart app
+
+# Rebuild solo la app
+docker compose build --no-cache app && docker compose up -d app
+
+# Shell dentro del contenedor
+docker compose exec app sh
+
+# Estado de migraciones
+docker compose exec app npx prisma migrate status
+
+# Backup manual
+docker compose run --rm backup
+```
+
+---
+
+## Troubleshooting
+
+### Redirect a localhost en /admin
+
+Verificar que `.env.production` en el VPS tiene:
+```
+NEXTAUTH_URL="https://app.clubvertikal.es"
+AUTH_TRUST_HOST=true
+```
+Luego reiniciar: `docker compose down && docker compose up -d` (no hace falta rebuild, son env vars de runtime).
+
+### La migración falla
+
+Revisar logs con `docker compose logs migrate`. Restaurar backup si es necesario (ver sección Rollback).
+
+### Caddy no sirve HTTPS
+
+Verificar que los puertos 80 y 443 están abiertos en el firewall del VPS y que el DNS apunta a la IP correcta.
+```bash
+docker compose logs caddy
 ```
 
 ---
 
 ## Verificación end-to-end
 
-1. `docker compose build` — completa sin errores
-2. `docker compose up -d` — ambos contenedores running
-3. `curl https://app.vertikal.club/api/health` → `{"status":"ok"}`
-4. `https://app.vertikal.club` → página de registro
-5. `https://app.vertikal.club/admin` → redirect a login
-6. Login con admin → panel de administración
-7. Certificado HTTPS (candado verde en `app.vertikal.club`)
-8. Ejecutar backup manual y verificar archivo creado
-9. `https://vertikal.club` → landing estática en Hostinger
-10. Links de la landing → redirigen correctamente a `app.vertikal.club`
+1. `docker compose ps` — todos los contenedores running
+2. `https://app.clubvertikal.es` — página de registro carga
+3. `https://app.clubvertikal.es/admin` — redirect a login (no a localhost)
+4. Login con admin — panel de administración funciona
+5. Certificado HTTPS (candado verde)
+6. Backup manual funciona: `docker compose run --rm backup`

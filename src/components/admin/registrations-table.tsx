@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/helpers/price-calculator";
 import { RegistrationActions } from "./registration-actions";
+import { FederatedToggle } from "./federated-toggle";
 import { cn } from "@/lib/utils";
 
 type Registration = {
@@ -124,7 +125,7 @@ function DesktopRow({ registration: reg }: { registration: Registration }) {
         <StatusBadge status={reg.paymentStatus} isActive={reg.active} />
       </TableCell>
       <TableCell>
-        <FederatedBadge isFederated={reg.isFederated} />
+        <FederatedToggle registrationId={reg.id} isFederated={reg.isFederated} />
       </TableCell>
       <TableCell className="text-muted-foreground">
         {formatDate(reg.createdAt)}
@@ -162,7 +163,7 @@ function MobileRegistrationCard({
         </Link>
         <div className="flex items-center gap-1.5">
           <StatusBadge status={reg.paymentStatus} isActive={reg.active} />
-          <FederatedBadge isFederated={reg.isFederated} />
+          <FederatedToggle registrationId={reg.id} isFederated={reg.isFederated} />
         </div>
       </div>
       <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
@@ -193,18 +194,5 @@ function StatusBadge({
       </Badge>
       {!isActive && <Badge variant="outline">Inactivo</Badge>}
     </div>
-  );
-}
-
-function FederatedBadge({ isFederated }: { isFederated: boolean }) {
-  return (
-    <Badge
-      className={cn(
-        "text-white",
-        isFederated ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700",
-      )}
-    >
-      {isFederated ? "Sí" : "No"}
-    </Badge>
   );
 }

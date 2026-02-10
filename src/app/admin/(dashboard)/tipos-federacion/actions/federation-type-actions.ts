@@ -74,3 +74,35 @@ export async function toggleFederationTypeActive(
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }
+
+export async function deleteFederationType(
+  id: string,
+): Promise<ActionResult> {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
+  const registrationCount = await prisma.registration.count({
+    where: { federationTypeId: id },
+  });
+
+  if (registrationCount > 0) {
+    return {
+      success: false,
+      error: "No se puede eliminar: tiene registros asociados",
+    };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.categoryPrice.deleteMany({
+      where: { category: { federationTypeId: id } },
+    });
+    await tx.category.deleteMany({ where: { federationTypeId: id } });
+    await tx.supplement.deleteMany({ where: { federationTypeId: id } });
+    await tx.supplementGroup.deleteMany({ where: { federationTypeId: id } });
+    await tx.federationSubtype.deleteMany({ where: { federationTypeId: id } });
+    await tx.federationType.delete({ where: { id } });
+  });
+
+  revalidatePath("/admin/tipos-federacion");
+  return { success: true };
+}

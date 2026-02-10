@@ -3,6 +3,7 @@ export {
   createFederationType,
   updateFederationType,
   toggleFederationTypeActive,
+  deleteFederationType,
   type ActionResult,
 } from "./actions/federation-type-actions";
 

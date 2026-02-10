@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type {
   FederationType,
   FederationSubtype,
@@ -8,6 +9,7 @@ import type {
   CategoryPrice,
   SupplementGroup,
 } from "@prisma/client";
+import { ChevronRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,11 +19,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { FederationTypeActions } from "./federation-type-actions";
-import { SubtypesSection } from "./subtypes-section";
-import { SupplementsSection } from "./supplements-section";
-import { CategoriesSection } from "./categories-section";
-import { SupplementGroupsSection } from "./supplement-groups-section";
+import { DetailSections } from "./federation-type-detail-sections";
 
 type SupplementWithGroup = Supplement & {
   supplementGroup: SupplementGroup | null;
@@ -75,55 +79,61 @@ function DesktopRow({
 }: {
   federationType: FederationTypeWithRelations;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nombre</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Registros</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow>
-            <TableCell className="font-medium">{ft.name}</TableCell>
-            <TableCell className="text-muted-foreground max-w-48 truncate">
-              {ft.description}
-            </TableCell>
-            <TableCell>
-              <Badge variant={ft.active ? "default" : "secondary"}>
-                {ft.active ? "Activo" : "Inactivo"}
-              </Badge>
-            </TableCell>
-            <TableCell>{ft._count.registrations}</TableCell>
-            <TableCell className="text-right">
-              <FederationTypeActions federationType={ft} />
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-      <SubtypesSection
-        federationTypeId={ft.id}
-        subtypes={ft.subtypes}
-      />
-      <CategoriesSection
-        federationTypeId={ft.id}
-        categories={ft.categories}
-        subtypes={ft.subtypes}
-      />
-      <SupplementGroupsSection
-        federationTypeId={ft.id}
-        supplementGroups={ft.supplementGroups}
-      />
-      <SupplementsSection
-        federationTypeId={ft.id}
-        supplements={ft.supplements}
-        supplementGroups={ft.supplementGroups}
-      />
-    </div>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-8" />
+              <TableHead>Nombre</TableHead>
+              <TableHead>Descripción</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Registros</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>
+                <CollapsibleTrigger asChild>
+                  <button
+                    type="button"
+                    className="p-1 rounded hover:bg-muted"
+                    aria-label={isOpen ? "Colapsar" : "Expandir"}
+                  >
+                    <ChevronRight
+                      className={`h-4 w-4 transition-transform ${isOpen ? "rotate-90" : ""}`}
+                    />
+                  </button>
+                </CollapsibleTrigger>
+              </TableCell>
+              <TableCell className="font-medium">{ft.name}</TableCell>
+              <TableCell className="text-muted-foreground max-w-48 truncate">
+                {ft.description}
+              </TableCell>
+              <TableCell>
+                <Badge variant={ft.active ? "default" : "secondary"}>
+                  {ft.active ? "Activo" : "Inactivo"}
+                </Badge>
+              </TableCell>
+              <TableCell>{ft._count.registrations}</TableCell>
+              <TableCell className="text-right">
+                <FederationTypeActions
+                  federationType={ft}
+                  registrationCount={ft._count.registrations}
+                />
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <CollapsibleContent>
+          <DetailSections federationType={ft} />
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
   );
 }
 
@@ -132,41 +142,45 @@ function MobileCard({
 }: {
   federationType: FederationTypeWithRelations;
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div className="rounded-lg border p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="font-medium">{ft.name}</p>
-          <p className="text-sm text-muted-foreground truncate">
-            {ft.description}
-          </p>
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className="rounded-lg border p-4 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-2 min-w-0"
+              aria-label={isOpen ? "Colapsar" : "Expandir"}
+            >
+              <ChevronRight
+                className={`h-4 w-4 shrink-0 transition-transform ${isOpen ? "rotate-90" : ""}`}
+              />
+              <div className="min-w-0 text-left">
+                <p className="font-medium">{ft.name}</p>
+                <p className="text-sm text-muted-foreground truncate">
+                  {ft.description}
+                </p>
+              </div>
+            </button>
+          </CollapsibleTrigger>
+          <Badge variant={ft.active ? "default" : "secondary"}>
+            {ft.active ? "Activo" : "Inactivo"}
+          </Badge>
         </div>
-        <Badge variant={ft.active ? "default" : "secondary"}>
-          {ft.active ? "Activo" : "Inactivo"}
-        </Badge>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span>{ft._count.registrations} registros</span>
+        </div>
+        <FederationTypeActions
+          federationType={ft}
+          registrationCount={ft._count.registrations}
+        />
+        <CollapsibleContent>
+          <DetailSections federationType={ft} />
+        </CollapsibleContent>
       </div>
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <span>{ft._count.registrations} registros</span>
-      </div>
-      <FederationTypeActions federationType={ft} />
-      <SubtypesSection
-        federationTypeId={ft.id}
-        subtypes={ft.subtypes}
-      />
-      <CategoriesSection
-        federationTypeId={ft.id}
-        categories={ft.categories}
-        subtypes={ft.subtypes}
-      />
-      <SupplementGroupsSection
-        federationTypeId={ft.id}
-        supplementGroups={ft.supplementGroups}
-      />
-      <SupplementsSection
-        federationTypeId={ft.id}
-        supplements={ft.supplements}
-        supplementGroups={ft.supplementGroups}
-      />
-    </div>
+    </Collapsible>
   );
 }
+

@@ -86,7 +86,7 @@ export function FederationStep({
         </>
       )}
 
-      <div className="flex justify-between pt-4">
+      <div className="flex justify-between">
         <Button type="button" variant="outline" onClick={onBack}>
           Anterior
         </Button>

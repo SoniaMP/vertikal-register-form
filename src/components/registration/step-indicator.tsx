@@ -14,7 +14,7 @@ type StepIndicatorProps = {
 
 export function StepIndicator({ currentStep }: StepIndicatorProps) {
   return (
-    <nav aria-label="Progreso del registro" className="-mx-6 mb-8 border-b px-6 pb-6">
+    <nav aria-label="Progreso del registro" className="-mx-6 px-6 pb-6">
       <ol className="flex items-center justify-between">
         {STEPS.map((step, index) => {
           const isCompleted = currentStep > step.number;

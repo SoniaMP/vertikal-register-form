@@ -55,8 +55,11 @@ export default async function RegistroPage() {
         </p>
       </div>
       <Card>
-        <CardContent className="pt-6">
-          <RegistrationWizard federationTypes={federationTypes} membershipFee={membershipFee} />
+        <CardContent>
+          <RegistrationWizard
+            federationTypes={federationTypes}
+            membershipFee={membershipFee}
+          />
         </CardContent>
       </Card>
     </div>

@@ -9,13 +9,23 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/helpers/price-calculator";
+import { RegistrationActions } from "./registration-actions";
+import { cn } from "@/lib/utils";
 
 type Registration = {
   id: string;
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
+  dni: string;
+  dateOfBirth: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  province: string;
   paymentStatus: string;
+  active: boolean;
   totalAmount: number;
   createdAt: Date;
   federationType: { name: string };
@@ -62,14 +72,12 @@ export function RegistrationsTable({ registrations }: Props) {
 
   return (
     <>
-      {/* Mobile card list */}
       <div className="space-y-3 md:hidden">
         {registrations.map((reg) => (
           <MobileRegistrationCard key={reg.id} registration={reg} />
         ))}
       </div>
 
-      {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto">
         <Table>
           <TableHeader>
@@ -80,40 +88,46 @@ export function RegistrationsTable({ registrations }: Props) {
               <TableHead>Total</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Fecha</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {registrations.map((reg) => (
-              <TableRow key={reg.id}>
-                <TableCell>
-                  <Link
-                    href={`/admin/registros/${reg.id}`}
-                    className="font-medium hover:underline"
-                  >
-                    {reg.firstName} {reg.lastName}
-                  </Link>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {reg.email}
-                </TableCell>
-                <TableCell>{reg.federationType.name} - {reg.federationSubtype.name}</TableCell>
-                <TableCell>{formatPrice(reg.totalAmount)}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={STATUS_VARIANTS[reg.paymentStatus] ?? "outline"}
-                  >
-                    {STATUS_LABELS[reg.paymentStatus] ?? reg.paymentStatus}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {formatDate(reg.createdAt)}
-                </TableCell>
-              </TableRow>
+              <DesktopRow key={reg.id} registration={reg} />
             ))}
           </TableBody>
         </Table>
       </div>
     </>
+  );
+}
+
+function DesktopRow({ registration: reg }: { registration: Registration }) {
+  return (
+    <TableRow className={cn(!reg.active && "opacity-50")}>
+      <TableCell>
+        <Link
+          href={`/admin/registros/${reg.id}`}
+          className="font-medium hover:underline"
+        >
+          {reg.firstName} {reg.lastName}
+        </Link>
+      </TableCell>
+      <TableCell className="text-muted-foreground">{reg.email}</TableCell>
+      <TableCell>
+        {reg.federationType.name} - {reg.federationSubtype.name}
+      </TableCell>
+      <TableCell>{formatPrice(reg.totalAmount)}</TableCell>
+      <TableCell>
+        <StatusBadge status={reg.paymentStatus} isActive={reg.active} />
+      </TableCell>
+      <TableCell className="text-muted-foreground">
+        {formatDate(reg.createdAt)}
+      </TableCell>
+      <TableCell className="text-right">
+        <RegistrationActions registration={reg} />
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -123,26 +137,51 @@ function MobileRegistrationCard({
   registration: Registration;
 }) {
   return (
-    <Link
-      href={`/admin/registros/${reg.id}`}
-      className="block rounded-lg border p-4 hover:bg-muted/50 transition-colors"
+    <div
+      className={cn(
+        "rounded-lg border p-4 transition-colors",
+        !reg.active && "opacity-50",
+      )}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        <Link
+          href={`/admin/registros/${reg.id}`}
+          className="min-w-0 hover:underline"
+        >
           <p className="font-medium truncate">
             {reg.firstName} {reg.lastName}
           </p>
           <p className="text-sm text-muted-foreground truncate">{reg.email}</p>
-        </div>
-        <Badge variant={STATUS_VARIANTS[reg.paymentStatus] ?? "outline"}>
-          {STATUS_LABELS[reg.paymentStatus] ?? reg.paymentStatus}
-        </Badge>
+        </Link>
+        <StatusBadge status={reg.paymentStatus} isActive={reg.active} />
       </div>
       <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-        <span>{reg.federationType.name} - {reg.federationSubtype.name}</span>
+        <span>
+          {reg.federationType.name} - {reg.federationSubtype.name}
+        </span>
         <span>{formatPrice(reg.totalAmount)}</span>
         <span className="ml-auto">{formatDate(reg.createdAt)}</span>
       </div>
-    </Link>
+      <div className="mt-2 flex justify-end border-t pt-2">
+        <RegistrationActions registration={reg} />
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({
+  status,
+  isActive,
+}: {
+  status: string;
+  isActive: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Badge variant={STATUS_VARIANTS[status] ?? "outline"}>
+        {STATUS_LABELS[status] ?? status}
+      </Badge>
+      {!isActive && <Badge variant="outline">Inactivo</Badge>}
+    </div>
   );
 }

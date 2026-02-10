@@ -106,6 +106,7 @@ model Registration {
   categoryId            String
   totalAmount           Int      // Total in cents
   paymentStatus         String   @default("PENDING") // PENDING | COMPLETED | FAILED | REFUNDED
+  active                Boolean  @default(true)
   stripeSessionId       String?
   stripePaymentId       String?
   confirmationSent      Boolean  @default(false)

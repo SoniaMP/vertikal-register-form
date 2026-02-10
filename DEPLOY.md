@@ -181,11 +181,49 @@ curl -vI https://app.vertikal.club 2>&1 | grep "SSL"      # certificado HTTPS
 ### 7. Programar backups automáticos
 
 ```bash
-chmod +x /opt/vertikal/scripts/backup-db.sh
+# Ejecutar backup manual para verificar
+cd /opt/vertikal
+docker compose --profile backup run --rm backup
+ls -la backups/
+```
 
+#### Cron (backup diario a las 3:00 AM)
+
+```bash
 crontab -e
 # Añadir:
-0 3 * * * docker compose -f /opt/vertikal/docker-compose.yml exec -T app /bin/sh /app/scripts/backup-db.sh >> /var/log/vertikal-backup.log 2>&1
+0 3 * * * cd /opt/vertikal && docker compose --profile backup run --rm backup >> /var/log/vertikal-backup.log 2>&1
+```
+
+#### Descargar backup a local (para inspección con DBeaver)
+
+```bash
+# Desde tu máquina local:
+scp deploy@TU_IP_IONOS:/opt/vertikal/backups/LATEST_FILE ./vertikal-backup.db
+
+# Listar backups disponibles:
+ssh deploy@TU_IP_IONOS "ls -lh /opt/vertikal/backups/"
+```
+
+Abrir `vertikal-backup.db` con DBeaver (driver SQLite) para consultar datos.
+
+#### Restaurar backup
+
+```bash
+ssh deploy@TU_IP_IONOS
+cd /opt/vertikal
+
+# 1. Parar la aplicación
+docker compose down
+
+# 2. Copiar backup al volumen
+docker run --rm \
+  -v sqlite-data:/app/data \
+  -v ./backups:/backups \
+  alpine sh -c "cp /backups/BACKUP_FILE /app/data/vertikal.db"
+
+# 3. Reiniciar
+docker compose up -d
 ```
 
 ---

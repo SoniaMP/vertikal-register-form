@@ -41,6 +41,19 @@ services:
       - caddy-data:/data
       - caddy-config:/config
 
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile.backup
+    volumes:
+      - sqlite-data:/app/data:ro
+      - ./backups:/backups
+    environment:
+      - DB_PATH=/app/data/vertikal.db
+      - BACKUP_DIR=/backups
+      - RETENTION_DAYS=7
+    profiles: ["backup"]
+
 volumes:
   sqlite-data:
   caddy-data:

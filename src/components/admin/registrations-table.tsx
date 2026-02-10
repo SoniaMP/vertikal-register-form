@@ -26,6 +26,7 @@ type Registration = {
   province: string;
   paymentStatus: string;
   active: boolean;
+  isFederated: boolean;
   totalAmount: number;
   createdAt: Date;
   federationType: { name: string };
@@ -87,6 +88,7 @@ export function RegistrationsTable({ registrations }: Props) {
               <TableHead>Federativa</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead>Federado</TableHead>
               <TableHead>Fecha</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
@@ -121,11 +123,16 @@ function DesktopRow({ registration: reg }: { registration: Registration }) {
       <TableCell>
         <StatusBadge status={reg.paymentStatus} isActive={reg.active} />
       </TableCell>
+      <TableCell>
+        <FederatedBadge isFederated={reg.isFederated} />
+      </TableCell>
       <TableCell className="text-muted-foreground">
         {formatDate(reg.createdAt)}
       </TableCell>
       <TableCell className="text-right">
-        <RegistrationActions registration={reg} />
+        <div className="flex items-center justify-end">
+          <RegistrationActions registration={reg} />
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -153,7 +160,10 @@ function MobileRegistrationCard({
           </p>
           <p className="text-sm text-muted-foreground truncate">{reg.email}</p>
         </Link>
-        <StatusBadge status={reg.paymentStatus} isActive={reg.active} />
+        <div className="flex items-center gap-1.5">
+          <StatusBadge status={reg.paymentStatus} isActive={reg.active} />
+          <FederatedBadge isFederated={reg.isFederated} />
+        </div>
       </div>
       <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
         <span>
@@ -183,5 +193,18 @@ function StatusBadge({
       </Badge>
       {!isActive && <Badge variant="outline">Inactivo</Badge>}
     </div>
+  );
+}
+
+function FederatedBadge({ isFederated }: { isFederated: boolean }) {
+  return (
+    <Badge
+      className={cn(
+        "text-white",
+        isFederated ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700",
+      )}
+    >
+      {isFederated ? "Sí" : "No"}
+    </Badge>
   );
 }

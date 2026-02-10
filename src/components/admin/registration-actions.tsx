@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Pencil, Power, Trash2 } from "lucide-react";
+import { Pencil, Power, ShieldCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   toggleRegistrationActive,
+  toggleRegistrationFederated,
   deleteRegistration,
 } from "@/app/admin/(dashboard)/registros/actions";
 import {
@@ -24,7 +25,7 @@ import {
 } from "./registration-form-dialog";
 
 type Props = {
-  registration: RegistrationFormData & { active: boolean };
+  registration: RegistrationFormData & { active: boolean; isFederated: boolean };
 };
 
 export function RegistrationActions({ registration }: Props) {
@@ -34,6 +35,15 @@ export function RegistrationActions({ registration }: Props) {
   function handleToggle() {
     startTransition(async () => {
       await toggleRegistrationActive(registration.id, !registration.active);
+    });
+  }
+
+  function handleToggleFederated() {
+    startTransition(async () => {
+      await toggleRegistrationFederated(
+        registration.id,
+        !registration.isFederated,
+      );
     });
   }
 
@@ -64,6 +74,16 @@ export function RegistrationActions({ registration }: Props) {
       >
         <Power className="h-4 w-4" />
       </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        onClick={handleToggleFederated}
+        disabled={isPending}
+        aria-label={registration.isFederated ? "Desfederar" : "Federar"}
+      >
+        <ShieldCheck className="h-4 w-4" />
+      </Button>
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button
@@ -73,7 +93,7 @@ export function RegistrationActions({ registration }: Props) {
             disabled={isPending}
             aria-label="Eliminar"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>

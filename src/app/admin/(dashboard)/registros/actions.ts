@@ -67,6 +67,22 @@ export async function toggleRegistrationActive(
   return { success: true };
 }
 
+export async function toggleRegistrationFederated(
+  id: string,
+  isFederated: boolean,
+): Promise<ActionResult> {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
+  await prisma.registration.update({
+    where: { id },
+    data: { isFederated },
+  });
+
+  revalidatePath("/admin");
+  return { success: true };
+}
+
 export async function deleteRegistration(id: string): Promise<ActionResult> {
   const authError = await requireAuth();
   if (authError) return authError;

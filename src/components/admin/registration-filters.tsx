@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { AdvancedFiltersSheet } from "./advanced-filters-sheet";
 
 const PAYMENT_STATUS_OPTIONS = [
   { value: "all", label: "Todos los estados" },
@@ -89,6 +90,7 @@ export function RegistrationFilters({ federationTypes }: Props) {
           ))}
         </SelectContent>
       </Select>
+      <AdvancedFiltersSheet />
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={handleClear}>
           Limpiar filtros

@@ -82,7 +82,7 @@ export function SubtypeActions({ subtype, registrationCount }: Props) {
             }
             className="h-7 w-7"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-3 w-3 text-destructive" />
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>

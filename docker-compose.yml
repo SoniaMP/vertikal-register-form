@@ -1,18 +1,32 @@
 services:
-  app:
+  migrate:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
-        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME}
-        DATABASE_URL: ${DATABASE_URL}
+      target: migrate
     env_file:
       - .env.production
     volumes:
       - sqlite-data:/app/data
-    expose:
-      - "3000"
+    restart: "no"
+
+  app:
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+        NEXT_PUBLIC_APP_NAME: ${NEXT_PUBLIC_APP_NAME}
+    env_file:
+      - .env.production
+    volumes:
+      - sqlite-data:/app/data
+    ports:
+      - "3000:3000"
 
   caddy:
     image: caddy:2-alpine

@@ -65,6 +65,8 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
+COPY --from=builder /app/node_modules/.bin ./node_modules/.bin
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
 # Establecemos permisos correctos
 RUN chown -R nextjs:nodejs /app
@@ -80,3 +82,16 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
+
+# ---- migrate (job) ----
+FROM deps AS migrate
+WORKDIR /app
+
+# Prisma schema, migrations, and config
+COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
+
+# Generate Prisma client (needed for seed)
+RUN npx prisma generate
+
+CMD ["sh", "-c", "npx prisma migrate deploy && (npx prisma db seed || true)"]

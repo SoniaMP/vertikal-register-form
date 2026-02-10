@@ -23,6 +23,8 @@ type SubtypeSelectorProps = {
 
 export function SubtypeSelector({ subtypes }: SubtypeSelectorProps) {
   const form = useFormContext<RegistrationInput>();
+  const selectedId = form.watch("federationSubtypeId");
+  const selectedSubtype = subtypes.find((st) => st.id === selectedId);
 
   if (subtypes.length === 0) return null;
 
@@ -54,6 +56,11 @@ export function SubtypeSelector({ subtypes }: SubtypeSelectorProps) {
               </SelectContent>
             </Select>
           </FormControl>
+          {selectedSubtype?.description && (
+            <p className="text-sm text-muted-foreground">
+              {selectedSubtype.description}
+            </p>
+          )}
           <FormMessage />
         </FormItem>
       )}

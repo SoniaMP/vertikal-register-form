@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/collapsible";
 import { FederationTypeActions } from "./federation-type-actions";
 import { DetailSections } from "./federation-type-detail-sections";
+import { TruncatedCell } from "./truncated-cell";
 
 type SupplementWithGroup = Supplement & {
   supplementGroup: SupplementGroup | null;
@@ -95,8 +96,8 @@ function DesktopRow({
           <TableHeader>
             <TableRow>
               <TableHead className="w-8 align-middle" />
-              <TableHead className="align-middle">Nombre</TableHead>
-              <TableHead className="align-middle">Descripción</TableHead>
+              <TableHead className="w-48 align-middle">Nombre</TableHead>
+              <TableHead className="w-64 align-middle">Descripción</TableHead>
               <TableHead className="align-middle">Estado</TableHead>
               <TableHead className="align-middle">Registros</TableHead>
               <TableHead className="text-right align-middle">Acciones</TableHead>
@@ -117,9 +118,11 @@ function DesktopRow({
                   </button>
                 </CollapsibleTrigger>
               </TableCell>
-              <TableCell className="font-medium align-middle">{ft.name}</TableCell>
-              <TableCell className="text-muted-foreground max-w-48 truncate align-middle">
-                {ft.description}
+              <TableCell className="w-48 align-middle">
+                <TruncatedCell text={ft.name} className="font-medium max-w-48" />
+              </TableCell>
+              <TableCell className="w-64 align-middle">
+                <TruncatedCell text={ft.description} className="text-muted-foreground max-w-64" />
               </TableCell>
               <TableCell className="align-middle">
                 <Badge variant={ft.active ? "default" : "secondary"}>

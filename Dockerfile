@@ -94,4 +94,4 @@ COPY prisma.config.ts ./prisma.config.ts
 # Generate Prisma client (needed for seed)
 RUN npx prisma generate
 
-CMD ["sh", "-c", "npx prisma migrate deploy && (npx prisma db seed || true) && chown -R 1001:1001 /app/data"]
+CMD ["sh", "-c", "npx prisma migrate deploy && chown -R 1001:1001 /app/data"]

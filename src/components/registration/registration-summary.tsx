@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { PriceSummary } from "./price-summary";
 import { calculateTotal } from "@/helpers/price-calculator";
@@ -23,6 +25,7 @@ export function RegistrationSummary({
   onSubmit,
   isSubmitting,
 }: RegistrationSummaryProps) {
+  const [hasAcceptedPrivacy, setHasAcceptedPrivacy] = useState(false);
   const form = useFormContext<RegistrationInput>();
   const data = form.getValues();
 
@@ -87,11 +90,20 @@ export function RegistrationSummary({
         </>
       )}
 
+      <ConsentCheckbox
+        isChecked={hasAcceptedPrivacy}
+        onCheckedChange={setHasAcceptedPrivacy}
+      />
+
       <div className="flex justify-between pt-4">
         <Button type="button" variant="outline" onClick={() => onEdit(2)}>
           Anterior
         </Button>
-        <Button type="button" onClick={onSubmit} disabled={isSubmitting}>
+        <Button
+          type="button"
+          onClick={onSubmit}
+          disabled={!hasAcceptedPrivacy || isSubmitting}
+        >
           {isSubmitting ? "Procesando..." : "Proceder al pago"}
         </Button>
       </div>
@@ -130,5 +142,26 @@ function SummaryRow({ label, value }: SummaryRowProps) {
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium">{value}</span>
     </div>
+  );
+}
+
+type ConsentCheckboxProps = {
+  isChecked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+};
+
+function ConsentCheckbox({ isChecked, onCheckedChange }: ConsentCheckboxProps) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-4">
+      <Checkbox
+        checked={isChecked}
+        onCheckedChange={(v) => onCheckedChange(v === true)}
+        className="mt-0.5"
+      />
+      <span className="text-sm leading-snug">
+        He leído y acepto la Política de Privacidad y consiento el tratamiento
+        de mis datos personales conforme al RGPD.
+      </span>
+    </label>
   );
 }

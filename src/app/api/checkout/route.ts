@@ -131,6 +131,7 @@ export async function POST(request: NextRequest) {
       categoryId: data.categoryId,
       totalAmount: breakdown.total,
       paymentStatus: "PENDING",
+      consentedAt: new Date(),
       supplements: {
         create: validSupplements.map((s) => ({
           supplementId: s.id,

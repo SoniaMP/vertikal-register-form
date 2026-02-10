@@ -111,6 +111,7 @@ model Registration {
   stripeSessionId       String?
   stripePaymentId       String?
   confirmationSent      Boolean  @default(false)
+  consentedAt           DateTime?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

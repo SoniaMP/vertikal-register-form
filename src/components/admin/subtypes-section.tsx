@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import type { FederationSubtype } from "@prisma/client";
+
+type SubtypeWithCount = FederationSubtype & {
+  _count: { registrations: number };
+};
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +14,7 @@ import { SubtypeFormDialog } from "./subtype-form-dialog";
 
 type Props = {
   federationTypeId: string;
-  subtypes: FederationSubtype[];
+  subtypes: SubtypeWithCount[];
 };
 
 export function SubtypesSection({ federationTypeId, subtypes }: Props) {
@@ -62,7 +66,7 @@ export function SubtypesSection({ federationTypeId, subtypes }: Props) {
   );
 }
 
-function SubtypeRow({ subtype }: { subtype: FederationSubtype }) {
+function SubtypeRow({ subtype }: { subtype: SubtypeWithCount }) {
   return (
     <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
       <div className="flex items-center gap-3 min-w-0">
@@ -71,7 +75,10 @@ function SubtypeRow({ subtype }: { subtype: FederationSubtype }) {
           {subtype.active ? "Activo" : "Inactivo"}
         </Badge>
       </div>
-      <SubtypeActions subtype={subtype} />
+      <SubtypeActions
+        subtype={subtype}
+        registrationCount={subtype._count.registrations}
+      />
     </div>
   );
 }

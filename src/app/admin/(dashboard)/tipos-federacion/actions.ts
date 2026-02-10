@@ -11,12 +11,14 @@ export {
   createSubtype,
   updateSubtype,
   toggleSubtypeActive,
+  deleteSubtype,
 } from "./actions/subtype-actions";
 
 export {
   createCategory,
   updateCategory,
   toggleCategoryActive,
+  deleteCategory,
   upsertCategoryPrice,
   batchUpsertCategoryPrices,
 } from "./actions/category-actions";

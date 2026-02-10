@@ -81,6 +81,30 @@ export async function toggleCategoryActive(
   return { success: true };
 }
 
+export async function deleteCategory(id: string): Promise<ActionResult> {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
+  const registrationCount = await prisma.registration.count({
+    where: { categoryId: id },
+  });
+
+  if (registrationCount > 0) {
+    return {
+      success: false,
+      error: "No se puede eliminar: tiene registros asociados",
+    };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.categoryPrice.deleteMany({ where: { categoryId: id } });
+    await tx.category.delete({ where: { id } });
+  });
+
+  revalidatePath("/admin/tipos-federacion");
+  return { success: true };
+}
+
 export async function batchUpsertCategoryPrices(
   entries: { categoryId: string; subtypeId: string; price: number | null }[],
 ): Promise<ActionResult> {

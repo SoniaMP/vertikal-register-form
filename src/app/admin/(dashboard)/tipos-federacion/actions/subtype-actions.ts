@@ -67,3 +67,27 @@ export async function toggleSubtypeActive(
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }
+
+export async function deleteSubtype(id: string): Promise<ActionResult> {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
+  const registrationCount = await prisma.registration.count({
+    where: { federationSubtypeId: id },
+  });
+
+  if (registrationCount > 0) {
+    return {
+      success: false,
+      error: "No se puede eliminar: tiene registros asociados",
+    };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.categoryPrice.deleteMany({ where: { subtypeId: id } });
+    await tx.federationSubtype.delete({ where: { id } });
+  });
+
+  revalidatePath("/admin/tipos-federacion");
+  return { success: true };
+}

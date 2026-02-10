@@ -6,14 +6,20 @@ export default async function FederationTypesPage() {
   const federationTypes = await prisma.federationType.findMany({
     include: {
       _count: { select: { supplements: true, registrations: true } },
-      subtypes: { orderBy: { createdAt: "asc" } },
+      subtypes: {
+        orderBy: { createdAt: "asc" },
+        include: { _count: { select: { registrations: true } } },
+      },
       supplements: {
         orderBy: { createdAt: "asc" },
         include: { supplementGroup: true },
       },
       categories: {
         orderBy: { createdAt: "asc" },
-        include: { prices: true },
+        include: {
+          prices: true,
+          _count: { select: { registrations: true } },
+        },
       },
       supplementGroups: {
         orderBy: { createdAt: "asc" },

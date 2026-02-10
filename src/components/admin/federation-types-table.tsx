@@ -31,7 +31,14 @@ type SupplementWithGroup = Supplement & {
   supplementGroup: SupplementGroup | null;
 };
 
-type CategoryWithPrices = Category & { prices: CategoryPrice[] };
+type SubtypeWithCount = FederationSubtype & {
+  _count: { registrations: number };
+};
+
+type CategoryWithPrices = Category & {
+  prices: CategoryPrice[];
+  _count: { registrations: number };
+};
 
 type SupplementGroupWithSupplements = SupplementGroup & {
   supplements: Supplement[];
@@ -39,7 +46,7 @@ type SupplementGroupWithSupplements = SupplementGroup & {
 
 export type FederationTypeWithRelations = FederationType & {
   _count: { supplements: number; registrations: number };
-  subtypes: FederationSubtype[];
+  subtypes: SubtypeWithCount[];
   supplements: SupplementWithGroup[];
   categories: CategoryWithPrices[];
   supplementGroups: SupplementGroupWithSupplements[];
@@ -87,17 +94,17 @@ function DesktopRow({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-8" />
-              <TableHead>Nombre</TableHead>
-              <TableHead>Descripción</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Registros</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
+              <TableHead className="w-8 align-middle" />
+              <TableHead className="align-middle">Nombre</TableHead>
+              <TableHead className="align-middle">Descripción</TableHead>
+              <TableHead className="align-middle">Estado</TableHead>
+              <TableHead className="align-middle">Registros</TableHead>
+              <TableHead className="text-right align-middle">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell>
+              <TableCell className="align-middle">
                 <CollapsibleTrigger asChild>
                   <button
                     type="button"
@@ -110,21 +117,23 @@ function DesktopRow({
                   </button>
                 </CollapsibleTrigger>
               </TableCell>
-              <TableCell className="font-medium">{ft.name}</TableCell>
-              <TableCell className="text-muted-foreground max-w-48 truncate">
+              <TableCell className="font-medium align-middle">{ft.name}</TableCell>
+              <TableCell className="text-muted-foreground max-w-48 truncate align-middle">
                 {ft.description}
               </TableCell>
-              <TableCell>
+              <TableCell className="align-middle">
                 <Badge variant={ft.active ? "default" : "secondary"}>
                   {ft.active ? "Activo" : "Inactivo"}
                 </Badge>
               </TableCell>
-              <TableCell>{ft._count.registrations}</TableCell>
-              <TableCell className="text-right">
-                <FederationTypeActions
-                  federationType={ft}
-                  registrationCount={ft._count.registrations}
-                />
+              <TableCell className="align-middle">{ft._count.registrations}</TableCell>
+              <TableCell className="align-middle">
+                <div className="flex justify-end">
+                  <FederationTypeActions
+                    federationType={ft}
+                    registrationCount={ft._count.registrations}
+                  />
+                </div>
               </TableCell>
             </TableRow>
           </TableBody>

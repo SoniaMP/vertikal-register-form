@@ -14,7 +14,10 @@ import { CategoryActions } from "./category-actions";
 import { CategoryFormDialog } from "./category-form-dialog";
 import { batchUpsertCategoryPrices } from "@/app/admin/(dashboard)/tipos-federacion/actions";
 
-type CategoryWithPrices = Category & { prices: CategoryPrice[] };
+type CategoryWithPrices = Category & {
+  prices: CategoryPrice[];
+  _count: { registrations: number };
+};
 
 type Props = {
   federationTypeId: string;
@@ -175,7 +178,10 @@ function PriceRow({
         </td>
       ))}
       <td className="py-2 pl-2">
-        <CategoryActions category={category} />
+        <CategoryActions
+          category={category}
+          registrationCount={category._count.registrations}
+        />
       </td>
     </tr>
   );

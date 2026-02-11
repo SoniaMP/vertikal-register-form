@@ -57,10 +57,13 @@ export function RegistrationWizard({
     defaultValues: { ...EMPTY_DEFAULTS, ...defaultValues },
   });
 
+  const isRenewal = mode === "renewal";
+
   const { clearSavedData } = useFormPersistence({
     form,
     currentStep,
     onRestoreStep: setCurrentStep,
+    enabled: !isRenewal,
     resetOnRestore: {
       federationTypeId: "",
       federationSubtypeId: "",

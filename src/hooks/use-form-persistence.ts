@@ -11,6 +11,7 @@ type UseFormPersistenceOptions<T extends FieldValues> = {
   currentStep: number;
   onRestoreStep: (step: number) => void;
   resetOnRestore?: Partial<T>;
+  enabled?: boolean;
 };
 
 export function useFormPersistence<T extends FieldValues>({
@@ -18,9 +19,11 @@ export function useFormPersistence<T extends FieldValues>({
   currentStep,
   onRestoreStep,
   resetOnRestore,
+  enabled = true,
 }: UseFormPersistenceOptions<T>) {
   // Restore saved form data on mount
   useEffect(() => {
+    if (!enabled) return;
     try {
       const savedData = sessionStorage.getItem(STORAGE_KEY);
       const savedStep = sessionStorage.getItem(STEP_KEY);
@@ -44,6 +47,7 @@ export function useFormPersistence<T extends FieldValues>({
 
   // Save form data whenever it changes
   useEffect(() => {
+    if (!enabled) return;
     const subscription = form.watch((values) => {
       try {
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(values));
@@ -52,16 +56,17 @@ export function useFormPersistence<T extends FieldValues>({
       }
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, enabled]);
 
   // Save current step
   useEffect(() => {
+    if (!enabled) return;
     try {
       sessionStorage.setItem(STEP_KEY, String(currentStep));
     } catch {
       // Ignore storage errors
     }
-  }, [currentStep]);
+  }, [currentStep, enabled]);
 
   const clearSavedData = useCallback(() => {
     try {

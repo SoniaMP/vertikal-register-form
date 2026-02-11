@@ -17,6 +17,7 @@ export type RenewalSearchResult = {
   federationTypeId: string;
   federationSubtypeId: string;
   categoryId: string;
+  supplementIds: string[];
 };
 
 export async function findRegistrationByDni(
@@ -45,8 +46,15 @@ export async function findRegistrationByDni(
       federationTypeId: true,
       federationSubtypeId: true,
       categoryId: true,
+      supplements: { select: { supplementId: true } },
     },
   });
 
-  return registration;
+  if (!registration) return null;
+
+  return {
+    ...registration,
+    supplements: undefined,
+    supplementIds: registration.supplements.map((s) => s.supplementId),
+  } as RenewalSearchResult;
 }

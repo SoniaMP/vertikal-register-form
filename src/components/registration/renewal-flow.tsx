@@ -9,7 +9,6 @@ import { RenewalLookup } from "./renewal-lookup";
 import { RegistrationWizard } from "./registration-wizard";
 import type { RenewalSearchResult } from "@/app/registro/actions";
 import type { FederationType } from "@/types";
-import type { RegistrationInput } from "@/validations/registration";
 
 type RenewalFlowProps = {
   federationTypes: FederationType[];
@@ -27,10 +26,7 @@ export function RenewalFlow({
     return <RenewalLookup onFound={setRenewalData} />;
   }
 
-  const defaultValues: Partial<RegistrationInput> = {
-    ...renewalData,
-    supplementIds: [],
-  };
+  const defaultValues: Partial<RegistrationInput> = renewalData;
 
   return (
     <>

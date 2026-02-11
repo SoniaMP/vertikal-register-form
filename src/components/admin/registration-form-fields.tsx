@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import type { RegistrationFormData } from "./registration-form-dialog";
 
 type Props = {
-  registration: RegistrationFormData;
+  registration?: Partial<RegistrationFormData>;
 };
 
 const FIELDS: {
@@ -23,7 +23,7 @@ const FIELDS: {
   { name: "province", label: "Provincia" },
 ];
 
-export function RegistrationFormFields({ registration }: Props) {
+export function RegistrationFormFields({ registration = {} }: Props) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {FIELDS.map(({ name, label, type }) => (

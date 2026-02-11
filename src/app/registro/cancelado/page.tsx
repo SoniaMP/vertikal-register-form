@@ -9,9 +9,9 @@ export const metadata = {
 
 export default function CanceladoPage() {
   return (
-    <div className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
+    <div className="flex flex-col items-center py-10 text-center">
       <XCircle className="mb-6 size-16 text-destructive" />
-      <h1 className="text-3xl font-bold">Pago cancelado</h1>
+      <h2 className="text-2xl font-bold">Pago cancelado</h2>
       <p className="mt-4 text-muted-foreground">
         El proceso de pago ha sido cancelado. No se ha realizado ningún cargo.
       </p>

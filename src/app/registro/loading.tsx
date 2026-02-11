@@ -2,12 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RegistroLoading() {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="mb-8 text-center">
-        <Skeleton className="mx-auto h-9 w-64" />
-        <Skeleton className="mx-auto mt-2 h-5 w-96" />
-      </div>
-
+    <div>
       {/* Step indicator skeleton */}
       <div className="mb-8 flex items-center justify-between">
         {[1, 2, 3].map((i) => (

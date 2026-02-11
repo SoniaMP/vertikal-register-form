@@ -8,6 +8,7 @@ import { StepIndicator } from "./step-indicator";
 import { PersonalDataForm } from "./personal-data-form";
 import { FederationStep } from "./federation-step";
 import { RegistrationSummary } from "./registration-summary";
+import { RenewalBanner } from "./renewal-banner";
 import { useFormPersistence } from "@/hooks/use-form-persistence";
 import {
   personalDataSchema,
@@ -20,11 +21,32 @@ import type { FederationType } from "@/types";
 type RegistrationWizardProps = {
   federationTypes: FederationType[];
   membershipFee: number;
+  mode?: "new" | "renewal";
+  defaultValues?: Partial<RegistrationInput>;
+};
+
+const EMPTY_DEFAULTS: RegistrationInput = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  dni: "",
+  dateOfBirth: "",
+  address: "",
+  city: "",
+  postalCode: "",
+  province: "",
+  federationTypeId: "",
+  federationSubtypeId: "",
+  categoryId: "",
+  supplementIds: [],
 };
 
 export function RegistrationWizard({
   federationTypes,
   membershipFee,
+  mode = "new",
+  defaultValues,
 }: RegistrationWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,22 +54,7 @@ export function RegistrationWizard({
 
   const form = useForm<RegistrationInput>({
     resolver: zodResolver(registrationSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      dni: "",
-      dateOfBirth: "",
-      address: "",
-      city: "",
-      postalCode: "",
-      province: "",
-      federationTypeId: "",
-      federationSubtypeId: "",
-      categoryId: "",
-      supplementIds: [],
-    },
+    defaultValues: { ...EMPTY_DEFAULTS, ...defaultValues },
   });
 
   const { clearSavedData } = useFormPersistence({
@@ -120,6 +127,7 @@ export function RegistrationWizard({
   return (
     <Form {...form}>
       <form onSubmit={(e) => e.preventDefault()}>
+        {mode === "renewal" && <RenewalBanner />}
         <StepIndicator currentStep={currentStep} />
 
         {error && (

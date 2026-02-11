@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const SPANISH_DNI_REGEX = /^\d{8}[A-Za-z]$/;
+export const SPANISH_DNI_REGEX = /^\d{8}[A-Za-z]$/;
 const SPANISH_PHONE_REGEX = /^(\+34)?[6-9]\d{8}$/;
 const SPANISH_POSTAL_CODE_REGEX = /^\d{5}$/;
 

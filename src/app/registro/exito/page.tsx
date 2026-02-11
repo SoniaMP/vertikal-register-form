@@ -15,9 +15,9 @@ export default async function ExitoPage({ searchParams }: ExitoPageProps) {
   const { session_id: sessionId } = await searchParams;
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center">
+    <div className="flex flex-col items-center py-10 text-center">
       <CheckCircle2 className="mb-6 size-16 text-green-600" />
-      <h1 className="text-3xl font-bold">Registro completado</h1>
+      <h2 className="text-2xl font-bold">Registro completado</h2>
       <p className="mt-4 text-muted-foreground">
         Tu pago se ha procesado correctamente. Recibirás un email de
         confirmación en breve.

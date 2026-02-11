@@ -9,6 +9,7 @@ import { RenewalLookup } from "./renewal-lookup";
 import { RegistrationWizard } from "./registration-wizard";
 import type { RenewalSearchResult } from "@/app/registro/actions";
 import type { FederationType } from "@/types";
+import { RegistrationInput } from "@/validations/registration";
 
 type RenewalFlowProps = {
   federationTypes: FederationType[];
@@ -19,8 +20,9 @@ export function RenewalFlow({
   federationTypes,
   membershipFee,
 }: RenewalFlowProps) {
-  const [renewalData, setRenewalData] =
-    useState<RenewalSearchResult | null>(null);
+  const [renewalData, setRenewalData] = useState<RenewalSearchResult | null>(
+    null,
+  );
 
   if (!renewalData) {
     return <RenewalLookup onFound={setRenewalData} />;

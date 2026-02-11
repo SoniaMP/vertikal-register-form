@@ -130,3 +130,64 @@ export type RegistrationSupplementRecord = {
   priceAtTime: number;
   supplement: Supplement;
 };
+
+// ── Membership status ──────────────────────────────
+
+export const MEMBERSHIP_STATUS = {
+  PENDING_PAYMENT: "PENDING_PAYMENT",
+  ACTIVE: "ACTIVE",
+  EXPIRED: "EXPIRED",
+  CANCELLED: "CANCELLED",
+} as const;
+
+export type MembershipStatus =
+  (typeof MEMBERSHIP_STATUS)[keyof typeof MEMBERSHIP_STATUS];
+
+// ── Member / Membership record types ───────────────
+
+export type MemberRecord = {
+  id: string;
+  dni: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  dateOfBirth: string;
+  address: string;
+  city: string;
+  postalCode: string;
+  province: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type MembershipSupplementRecord = {
+  membershipId: string;
+  supplementId: string;
+  priceAtTime: number;
+  supplement: Supplement;
+};
+
+export type MembershipRecord = {
+  id: string;
+  memberId: string;
+  year: number;
+  status: MembershipStatus;
+  federationTypeId: string;
+  federationSubtypeId: string;
+  categoryId: string;
+  isFederated: boolean;
+  totalAmount: number;
+  paymentStatus: PaymentStatus;
+  stripeSessionId: string | null;
+  stripePaymentId: string | null;
+  confirmationSent: boolean;
+  consentedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  member: MemberRecord;
+  federationType: FederationType;
+  federationSubtype: FederationSubtype;
+  category: Category;
+  supplements: MembershipSupplementRecord[];
+};

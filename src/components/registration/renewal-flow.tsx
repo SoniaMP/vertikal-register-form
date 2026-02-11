@@ -8,16 +8,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RenewalLookup } from "./renewal-lookup";
 import { RegistrationWizard } from "./registration-wizard";
 import type { RenewalSearchResult } from "@/app/registro/actions";
-import type { FederationType } from "@/types";
+import type { LicenseCatalogType } from "@/types";
 import { RegistrationInput } from "@/validations/registration";
 
 type RenewalFlowProps = {
-  federationTypes: FederationType[];
+  licenseTypes: LicenseCatalogType[];
   membershipFee: number;
 };
 
 export function RenewalFlow({
-  federationTypes,
+  licenseTypes,
   membershipFee,
 }: RenewalFlowProps) {
   const [renewalData, setRenewalData] = useState<RenewalSearchResult | null>(
@@ -41,7 +41,7 @@ export function RenewalFlow({
       <Card>
         <CardContent>
           <RegistrationWizard
-            federationTypes={federationTypes}
+            licenseTypes={licenseTypes}
             membershipFee={membershipFee}
             mode="renewal"
             defaultValues={defaultValues}

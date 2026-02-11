@@ -1,42 +1,38 @@
 import { describe, it, expect } from "vitest";
 import { calculateTotal, formatPrice } from "../price-calculator";
-import type { Supplement } from "@/types";
+import type { SupplementSummary } from "@/types";
 
-const supplementA: Supplement = {
+const supplementA: SupplementSummary = {
   id: "sup1",
   name: "Seguro accidentes premium",
   description: "Cobertura ampliada",
   price: 1500,
   active: true,
-  federationTypeId: "fed1",
   supplementGroupId: null,
   supplementGroup: null,
 };
 
-const supplementB: Supplement = {
+const supplementB: SupplementSummary = {
   id: "sup2",
   name: "Seguro responsabilidad civil",
   description: "RC deportiva",
   price: 1000,
   active: true,
-  federationTypeId: "fed1",
   supplementGroupId: null,
   supplementGroup: null,
 };
 
-const groupedSupplement: Supplement = {
+const groupedSupplement: SupplementSummary = {
   id: "sup3",
   name: "Seguro grupo A",
   description: "Parte del grupo",
   price: null,
   active: true,
-  federationTypeId: "fed1",
   supplementGroupId: "grp1",
   supplementGroup: {
     id: "grp1",
     name: "Pack Seguros",
     price: 2000,
-    federationTypeId: "fed1",
   },
 };
 

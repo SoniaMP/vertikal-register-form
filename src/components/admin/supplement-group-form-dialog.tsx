@@ -19,7 +19,6 @@ import {
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  federationTypeId: string;
   group?: SupplementGroup;
 };
 
@@ -28,14 +27,13 @@ const INITIAL_STATE = { success: false, error: undefined };
 export function SupplementGroupFormDialog({
   open,
   onOpenChange,
-  federationTypeId,
   group,
 }: Props) {
   const isEditing = !!group;
 
   const action = isEditing
     ? updateSupplementGroup.bind(null, group.id)
-    : createSupplementGroup.bind(null, federationTypeId);
+    : createSupplementGroup;
 
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
 
@@ -60,18 +58,6 @@ export function SupplementGroupFormDialog({
               defaultValue={group?.name ?? ""}
               required
               minLength={2}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="grp-price">Precio del grupo (EUR)</Label>
-            <Input
-              id="grp-price"
-              name="price"
-              type="number"
-              step="0.01"
-              min="0.01"
-              defaultValue={group ? (group.price / 100).toFixed(2) : ""}
-              required
             />
           </div>
           {state.error && (

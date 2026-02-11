@@ -2,19 +2,35 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "../route";
 import { NextRequest } from "next/server";
 
-const mockFindUnique = vi.fn();
-const mockCreate = vi.fn();
-const mockUpdate = vi.fn();
+const mockOfferingFind = vi.fn();
+const mockSupplementFindMany = vi.fn();
+const mockSupplementPriceFindMany = vi.fn();
+const mockGroupPriceFindMany = vi.fn();
+const mockMemberUpsert = vi.fn();
+const mockMembershipCreate = vi.fn();
+const mockMembershipUpdate = vi.fn();
 const mockSessionCreate = vi.fn();
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    federationType: {
-      findUnique: (...args: unknown[]) => mockFindUnique(...args),
+    licenseOffering: {
+      findFirst: (...args: unknown[]) => mockOfferingFind(...args),
     },
-    registration: {
-      create: (...args: unknown[]) => mockCreate(...args),
-      update: (...args: unknown[]) => mockUpdate(...args),
+    supplement: {
+      findMany: (...args: unknown[]) => mockSupplementFindMany(...args),
+    },
+    supplementPrice: {
+      findMany: (...args: unknown[]) => mockSupplementPriceFindMany(...args),
+    },
+    supplementGroupPrice: {
+      findMany: (...args: unknown[]) => mockGroupPriceFindMany(...args),
+    },
+    member: {
+      upsert: (...args: unknown[]) => mockMemberUpsert(...args),
+    },
+    membership: {
+      create: (...args: unknown[]) => mockMembershipCreate(...args),
+      update: (...args: unknown[]) => mockMembershipUpdate(...args),
     },
   },
 }));
@@ -31,6 +47,7 @@ vi.mock("@/lib/stripe", () => ({
 
 vi.mock("@/lib/settings", () => ({
   getMembershipFee: () => Promise.resolve(2000),
+  getActiveSeason: () => Promise.resolve({ id: "season-1", name: "2025-2026" }),
 }));
 
 function createRequest(body: unknown) {
@@ -43,7 +60,7 @@ function createRequest(body: unknown) {
 
 const validBody = {
   firstName: "Juan",
-  lastName: "García",
+  lastName: "Garcia",
   email: "juan@test.com",
   phone: "612345678",
   dni: "12345678A",
@@ -52,50 +69,48 @@ const validBody = {
   city: "Madrid",
   postalCode: "28001",
   province: "Madrid",
-  federationTypeId: "fed-1",
-  federationSubtypeId: "sub-1",
+  typeId: "type-1",
+  subtypeId: "sub-1",
   categoryId: "cat-1",
   supplementIds: ["sup-1"],
 };
 
-const mockFederation = {
-  id: "fed-1",
-  name: "Nacional",
-  description: "Federativa nacional",
-  active: true,
-  subtypes: [
-    {
-      id: "sub-1",
-      name: "Basica",
-      description: "Modalidad básica",
-      active: true,
-      federationTypeId: "fed-1",
-    },
-  ],
-  categories: [
-    {
-      id: "cat-1",
-      name: "Adulto",
-      description: "Categoría adulto",
-      active: true,
-      federationTypeId: "fed-1",
-      prices: [{ id: "cp-1", categoryId: "cat-1", subtypeId: "sub-1", price: 4500 }],
-    },
-  ],
-  supplements: [
+const mockOffering = {
+  id: "off-1",
+  seasonId: "season-1",
+  typeId: "type-1",
+  subtypeId: "sub-1",
+  categoryId: "cat-1",
+  price: 4500,
+  type: { id: "type-1", name: "Nacional" },
+  subtype: { id: "sub-1", name: "Basica" },
+  category: { id: "cat-1", name: "Adulto" },
+};
+
+function setupHappyPath() {
+  mockOfferingFind.mockResolvedValue(mockOffering);
+  mockSupplementFindMany.mockResolvedValue([
     {
       id: "sup-1",
       name: "Seguro extra",
-      description: "Seguro adicional",
-      price: 1000,
+      price: null,
       active: true,
-      federationTypeId: "fed-1",
       supplementGroupId: null,
       supplementGroup: null,
     },
-  ],
-  supplementGroups: [],
-};
+  ]);
+  mockSupplementPriceFindMany.mockResolvedValue([
+    { supplementId: "sup-1", price: 1000 },
+  ]);
+  mockGroupPriceFindMany.mockResolvedValue([]);
+  mockMemberUpsert.mockResolvedValue({ id: "member-1" });
+  mockMembershipCreate.mockResolvedValue({ id: "ms-123" });
+  mockMembershipUpdate.mockResolvedValue({});
+  mockSessionCreate.mockResolvedValue({
+    id: "cs_test_123",
+    url: "https://checkout.stripe.com/pay/cs_test_123",
+  });
+}
 
 describe("POST /api/checkout", () => {
   beforeEach(() => {
@@ -112,53 +127,33 @@ describe("POST /api/checkout", () => {
     expect(data.error).toBe("Datos de registro inválidos");
   });
 
-  it("returns 400 when federation type not found", async () => {
-    mockFindUnique.mockResolvedValue(null);
+  it("returns 400 when offering not found", async () => {
+    mockOfferingFind.mockResolvedValue(null);
 
     const request = createRequest(validBody);
     const response = await POST(request);
 
     expect(response.status).toBe(400);
     const data = await response.json();
-    expect(data.error).toBe("Tipo de federativa no encontrado");
-  });
-
-  it("returns 400 when subtype not found", async () => {
-    mockFindUnique.mockResolvedValue({
-      ...mockFederation,
-      subtypes: [],
-    });
-
-    const request = createRequest(validBody);
-    const response = await POST(request);
-
-    expect(response.status).toBe(400);
-    const data = await response.json();
-    expect(data.error).toBe("Subtipo de federativa no encontrado");
+    expect(data.error).toBe(
+      "No hay oferta para esta combinación de licencia y categoría",
+    );
   });
 
   it("returns 400 for invalid supplements", async () => {
-    mockFindUnique.mockResolvedValue({
-      ...mockFederation,
-      supplements: [],
-    });
+    mockOfferingFind.mockResolvedValue(mockOffering);
+    mockSupplementFindMany.mockResolvedValue([]);
 
     const request = createRequest(validBody);
     const response = await POST(request);
 
     expect(response.status).toBe(400);
     const data = await response.json();
-    expect(data.error).toBe("Suplementos inválidos para esta federativa");
+    expect(data.error).toBe("Suplementos inválidos");
   });
 
-  it("creates registration and returns Stripe session URL", async () => {
-    mockFindUnique.mockResolvedValue(mockFederation);
-    mockCreate.mockResolvedValue({ id: "reg-123" });
-    mockUpdate.mockResolvedValue({});
-    mockSessionCreate.mockResolvedValue({
-      id: "cs_test_123",
-      url: "https://checkout.stripe.com/pay/cs_test_123",
-    });
+  it("upserts member, creates membership, and returns Stripe session URL", async () => {
+    setupHappyPath();
 
     const request = createRequest(validBody);
     const response = await POST(request);
@@ -167,29 +162,49 @@ describe("POST /api/checkout", () => {
     const data = await response.json();
     expect(data.url).toBe("https://checkout.stripe.com/pay/cs_test_123");
 
-    // Total: category 4500 + membership 2000 + supplement 1000 = 7500
-    expect(mockCreate).toHaveBeenCalledWith(
+    expect(mockMemberUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { dni: "12345678A" },
+        create: expect.objectContaining({
+          dni: "12345678A",
+          email: "juan@test.com",
+        }),
+        update: expect.objectContaining({ email: "juan@test.com" }),
+      }),
+    );
+
+    // Total: offering 4500 + membership 2000 + supplement 1000 = 7500
+    expect(mockMembershipCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
+          memberId: "member-1",
+          seasonId: "season-1",
           totalAmount: 7500,
           paymentStatus: "PENDING",
-          email: "juan@test.com",
-          federationSubtypeId: "sub-1",
+          typeId: "type-1",
+          subtypeId: "sub-1",
           categoryId: "cat-1",
+          offeringId: "off-1",
+          licensePriceSnapshot: 4500,
+          licenseLabelSnapshot: "Nacional - Basica - Adulto",
         }),
       }),
     );
 
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "reg-123" },
+    expect(mockMembershipUpdate).toHaveBeenCalledWith({
+      where: { id: "ms-123" },
       data: { stripeSessionId: "cs_test_123" },
     });
+
+    expect(mockSessionCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: { membershipId: "ms-123" },
+      }),
+    );
   });
 
-  it("returns 502 and marks registration FAILED when Stripe throws", async () => {
-    mockFindUnique.mockResolvedValue(mockFederation);
-    mockCreate.mockResolvedValue({ id: "reg-err" });
-    mockUpdate.mockResolvedValue({});
+  it("returns 502 and marks membership FAILED/CANCELLED when Stripe throws", async () => {
+    setupHappyPath();
     mockSessionCreate.mockRejectedValue(
       new Error("Invalid API Key provided: sk_test_REPLACE_ME"),
     );
@@ -202,29 +217,36 @@ describe("POST /api/checkout", () => {
     expect(data.error).toContain("Error al conectar con la pasarela de pago");
     expect(data.error).toContain("Invalid API Key");
 
-    expect(mockUpdate).toHaveBeenCalledWith({
-      where: { id: "reg-err" },
-      data: { paymentStatus: "FAILED" },
+    expect(mockMembershipUpdate).toHaveBeenCalledWith({
+      where: { id: "ms-123" },
+      data: { paymentStatus: "FAILED", status: "CANCELLED" },
     });
   });
 
-  it("creates registration without supplements", async () => {
-    const bodyNoSupplements = { ...validBody, supplementIds: [] };
-    mockFindUnique.mockResolvedValue(mockFederation);
-    mockCreate.mockResolvedValue({ id: "reg-456" });
-    mockUpdate.mockResolvedValue({});
-    mockSessionCreate.mockResolvedValue({
-      id: "cs_test_456",
-      url: "https://checkout.stripe.com/pay/cs_test_456",
-    });
+  it("normalizes DNI to uppercase in member upsert", async () => {
+    setupHappyPath();
 
-    const request = createRequest(bodyNoSupplements);
+    const request = createRequest({ ...validBody, dni: "12345678a" });
+    await POST(request);
+
+    expect(mockMemberUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { dni: "12345678A" },
+      }),
+    );
+  });
+
+  it("creates membership without supplements", async () => {
+    setupHappyPath();
+    mockSupplementFindMany.mockResolvedValue([]);
+
+    const request = createRequest({ ...validBody, supplementIds: [] });
     const response = await POST(request);
 
     expect(response.status).toBe(200);
 
-    // Total: category 4500 + membership 2000 = 6500
-    expect(mockCreate).toHaveBeenCalledWith(
+    // Total: offering 4500 + membership 2000 = 6500
+    expect(mockMembershipCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ totalAmount: 6500 }),
       }),

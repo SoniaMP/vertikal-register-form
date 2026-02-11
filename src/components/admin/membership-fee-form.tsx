@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateMembershipFee } from "@/app/admin/(dashboard)/ajustes/actions";
-import type { ActionResult } from "@/app/admin/(dashboard)/tipos-federacion/actions";
+import type { ActionResult } from "@/lib/actions";
 
 type MembershipFeeFormProps = {
   currentFeeEuros: number;

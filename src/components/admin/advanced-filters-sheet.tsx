@@ -35,7 +35,7 @@ const ADVANCED_KEYS = [
   "address",
   "dateOfBirth",
   "federated",
-  "active",
+  "membershipStatus",
 ] as const;
 
 type AdvancedKey = (typeof ADVANCED_KEYS)[number];
@@ -44,18 +44,25 @@ const TEXT_FIELDS: { key: AdvancedKey; label: string }[] = [
   { key: "firstName", label: "Nombre" },
   { key: "lastName", label: "Apellidos" },
   { key: "email", label: "Email" },
-  { key: "phone", label: "Teléfono" },
+  { key: "phone", label: "Telefono" },
   { key: "dni", label: "DNI" },
   { key: "city", label: "Ciudad" },
   { key: "province", label: "Provincia" },
-  { key: "postalCode", label: "Código postal" },
-  { key: "address", label: "Dirección" },
+  { key: "postalCode", label: "Codigo postal" },
+  { key: "address", label: "Direccion" },
   { key: "dateOfBirth", label: "Fecha de nacimiento" },
 ];
 
 const BOOLEAN_FIELDS: { key: AdvancedKey; label: string }[] = [
   { key: "federated", label: "Federado" },
-  { key: "active", label: "Activo" },
+];
+
+const MEMBERSHIP_STATUS_OPTIONS = [
+  { value: "all", label: "Todos" },
+  { value: "PENDING_PAYMENT", label: "Pendiente de pago" },
+  { value: "ACTIVE", label: "Activo" },
+  { value: "EXPIRED", label: "Expirado" },
+  { value: "CANCELLED", label: "Cancelado" },
 ];
 
 export function AdvancedFiltersSheet() {
@@ -120,7 +127,7 @@ export function AdvancedFiltersSheet() {
         <SheetHeader>
           <SheetTitle>Filtros avanzados</SheetTitle>
           <SheetDescription>
-            Filtra registros por cualquier campo.
+            Filtra miembros por cualquier campo.
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-4 px-4">
@@ -151,12 +158,32 @@ export function AdvancedFiltersSheet() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="true">Sí</SelectItem>
+                  <SelectItem value="true">Si</SelectItem>
                   <SelectItem value="false">No</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           ))}
+          <div className="space-y-1.5">
+            <Label>Estado de membresia</Label>
+            <Select
+              value={values.membershipStatus ?? "all"}
+              onValueChange={(v) =>
+                setValues((prev) => ({ ...prev, membershipStatus: v }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MEMBERSHIP_STATUS_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <SheetFooter>
           <Button variant="outline" onClick={handleClear}>

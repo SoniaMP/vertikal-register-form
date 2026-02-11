@@ -1,9 +1,9 @@
-import type { PriceBreakdown, Supplement, SupplementBreakdownItem } from "@/types";
+import type { PriceBreakdown, SupplementSummary, SupplementBreakdownItem } from "@/types";
 
 export function calculateTotal(
   categoryName: string,
   categoryPrice: number,
-  selectedSupplements: Supplement[],
+  selectedSupplements: SupplementSummary[],
   membershipFee: number,
 ): PriceBreakdown {
   const supplements: SupplementBreakdownItem[] = [];

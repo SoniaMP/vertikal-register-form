@@ -4,12 +4,12 @@ import { useFormContext } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormField, FormItem, FormControl } from "@/components/ui/form";
 import { formatPrice } from "@/helpers/price-calculator";
-import type { Supplement, SupplementGroup } from "@/types";
+import type { SupplementSummary, SupplementGroupSummary } from "@/types";
 import type { RegistrationInput } from "@/validations/registration";
 
 type SupplementSelectorProps = {
-  supplements: Supplement[];
-  supplementGroups: SupplementGroup[];
+  supplements: SupplementSummary[];
+  supplementGroups: SupplementGroupSummary[];
 };
 
 export function SupplementSelector({
@@ -20,7 +20,7 @@ export function SupplementSelector({
   if (activeSupplements.length === 0) return null;
 
   const individual = activeSupplements.filter((s) => !s.supplementGroupId);
-  const groupedByGroupId = new Map<string, Supplement[]>();
+  const groupedByGroupId = new Map<string, SupplementSummary[]>();
 
   for (const s of activeSupplements) {
     if (s.supplementGroupId) {
@@ -65,8 +65,8 @@ function GroupSection({
   group,
   supplements,
 }: {
-  group: SupplementGroup;
-  supplements: Supplement[];
+  group: SupplementGroupSummary;
+  supplements: SupplementSummary[];
 }) {
   return (
     <div className="rounded-lg border p-3 space-y-2">
@@ -96,7 +96,7 @@ function SupplementCheckbox({
   supplement,
   priceLabel,
 }: {
-  supplement: Supplement;
+  supplement: SupplementSummary;
   priceLabel: string;
 }) {
   const form = useFormContext<RegistrationInput>();

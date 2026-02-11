@@ -19,23 +19,17 @@ import {
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  federationTypeId: string;
   category?: Category;
 };
 
 const INITIAL_STATE = { success: false, error: undefined };
 
-export function CategoryFormDialog({
-  open,
-  onOpenChange,
-  federationTypeId,
-  category,
-}: Props) {
+export function CategoryFormDialog({ open, onOpenChange, category }: Props) {
   const isEditing = !!category;
 
   const action = isEditing
     ? updateCategory.bind(null, category.id)
-    : createCategory.bind(null, federationTypeId);
+    : createCategory;
 
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
 

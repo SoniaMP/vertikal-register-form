@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { SPANISH_DNI_REGEX } from "@/validations/registration";
 import {
-  findRegistrationByDni,
+  findMemberByDni,
   type RenewalSearchResult,
 } from "@/app/registro/actions";
 
@@ -30,7 +30,7 @@ export function RenewalLookup({ onFound }: RenewalLookupProps) {
 
     setState("loading");
     try {
-      const result = await findRegistrationByDni(dni);
+      const result = await findMemberByDni(dni);
       if (result) {
         onFound(result);
       } else {

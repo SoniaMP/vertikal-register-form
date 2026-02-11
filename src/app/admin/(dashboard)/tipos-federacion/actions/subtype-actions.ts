@@ -2,18 +2,18 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { federationSubtypeSchema } from "@/validations/federation-type";
-import { requireAuth, type ActionResult } from "./federation-type-actions";
+import { licenseSubtypeSchema } from "@/validations/license";
+import { requireAuth, type ActionResult } from "@/lib/actions";
 
 export async function createSubtype(
-  federationTypeId: string,
+  licenseTypeId: string,
   _prevState: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
   const authError = await requireAuth();
   if (authError) return authError;
 
-  const parsed = federationSubtypeSchema.safeParse({
+  const parsed = licenseSubtypeSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
   });
@@ -23,8 +23,8 @@ export async function createSubtype(
     return { success: false, error: firstError };
   }
 
-  await prisma.federationSubtype.create({
-    data: { ...parsed.data, federationTypeId },
+  await prisma.licenseSubtype.create({
+    data: { ...parsed.data, licenseTypeId },
   });
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
@@ -38,7 +38,7 @@ export async function updateSubtype(
   const authError = await requireAuth();
   if (authError) return authError;
 
-  const parsed = federationSubtypeSchema.safeParse({
+  const parsed = licenseSubtypeSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
   });
@@ -48,7 +48,7 @@ export async function updateSubtype(
     return { success: false, error: firstError };
   }
 
-  await prisma.federationSubtype.update({ where: { id }, data: parsed.data });
+  await prisma.licenseSubtype.update({ where: { id }, data: parsed.data });
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }
@@ -60,7 +60,7 @@ export async function toggleSubtypeActive(
   const authError = await requireAuth();
   if (authError) return authError;
 
-  await prisma.federationSubtype.update({
+  await prisma.licenseSubtype.update({
     where: { id },
     data: { active: isActive },
   });
@@ -72,20 +72,20 @@ export async function deleteSubtype(id: string): Promise<ActionResult> {
   const authError = await requireAuth();
   if (authError) return authError;
 
-  const registrationCount = await prisma.registration.count({
-    where: { federationSubtypeId: id },
+  const membershipCount = await prisma.membership.count({
+    where: { subtypeId: id },
   });
 
-  if (registrationCount > 0) {
+  if (membershipCount > 0) {
     return {
       success: false,
-      error: "No se puede eliminar: tiene registros asociados",
+      error: "No se puede eliminar: tiene membresías asociadas",
     };
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.categoryPrice.deleteMany({ where: { subtypeId: id } });
-    await tx.federationSubtype.delete({ where: { id } });
+    await tx.licenseOffering.deleteMany({ where: { subtypeId: id } });
+    await tx.licenseSubtype.delete({ where: { id } });
   });
 
   revalidatePath("/admin/tipos-federacion");

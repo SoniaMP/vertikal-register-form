@@ -14,14 +14,9 @@ type SupplementGroupWithSupplements = SupplementGroup & {
 type Props = {
   supplement: Supplement;
   supplementGroups: SupplementGroupWithSupplements[];
-  federationTypeId: string;
 };
 
-export function SupplementActions({
-  supplement,
-  supplementGroups,
-  federationTypeId,
-}: Props) {
+export function SupplementActions({ supplement, supplementGroups }: Props) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -57,7 +52,6 @@ export function SupplementActions({
       <SupplementFormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        federationTypeId={federationTypeId}
         supplement={supplement}
         supplementGroups={supplementGroups}
       />

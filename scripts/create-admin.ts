@@ -16,17 +16,25 @@ async function main() {
     process.exit(1);
   }
 
-  const existing = await prisma.adminUser.findUnique({ where: { email } });
+  const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    console.error(`Admin user with email "${email}" already exists.`);
+    console.error(`User with email "${email}" already exists.`);
     process.exit(1);
   }
 
-  const user = await prisma.adminUser.create({
+  // Ensure ADMIN role exists
+  const adminRole = await prisma.role.upsert({
+    where: { name: "ADMIN" },
+    update: {},
+    create: { name: "ADMIN" },
+  });
+
+  const user = await prisma.user.create({
     data: {
       email,
       passwordHash: hash("sha256", password),
       name,
+      roles: { create: { roleId: adminRole.id } },
     },
   });
 

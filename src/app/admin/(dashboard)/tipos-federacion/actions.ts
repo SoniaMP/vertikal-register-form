@@ -1,11 +1,11 @@
-// Re-export all actions from split files for backward compatibility
 export {
-  createFederationType,
-  updateFederationType,
-  toggleFederationTypeActive,
-  deleteFederationType,
-  type ActionResult,
-} from "./actions/federation-type-actions";
+  createLicenseType,
+  updateLicenseType,
+  toggleLicenseTypeActive,
+  deleteLicenseType,
+} from "./actions/license-type-actions";
+
+export type { ActionResult } from "@/lib/actions";
 
 export {
   createSubtype,
@@ -19,15 +19,16 @@ export {
   updateCategory,
   toggleCategoryActive,
   deleteCategory,
-  upsertCategoryPrice,
-  batchUpsertCategoryPrices,
+  batchUpsertOfferings,
 } from "./actions/category-actions";
 
 export {
   createSupplement,
   updateSupplement,
   toggleSupplementActive,
+  upsertSupplementPrice,
   createSupplementGroup,
   updateSupplementGroup,
   deleteSupplementGroup,
+  upsertSupplementGroupPrice,
 } from "./actions/supplement-actions";

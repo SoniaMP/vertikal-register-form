@@ -12,7 +12,8 @@
     "db:studio": "npx prisma studio",
     "test": "vitest run",
     "test:watch": "vitest",
-    "admin:create": "tsx scripts/create-admin.ts"
+    "admin:create": "tsx scripts/create-admin.ts",
+    "db:backfill": "tsx scripts/backfillCatalog.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

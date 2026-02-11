@@ -14,11 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { FederationSubtype } from "@/types";
+import type { LicenseSubtypeSummary } from "@/types";
 import type { RegistrationInput } from "@/validations/registration";
 
 type SubtypeSelectorProps = {
-  subtypes: FederationSubtype[];
+  subtypes: LicenseSubtypeSummary[];
 };
 
 export function SubtypeSelector({ subtypes }: SubtypeSelectorProps) {
@@ -29,7 +29,7 @@ export function SubtypeSelector({ subtypes }: SubtypeSelectorProps) {
   return (
     <FormField
       control={form.control}
-      name="federationSubtypeId"
+      name="subtypeId"
       render={({ field }) => (
         <FormItem>
           <h3 className="text-lg font-semibold">Modalidad</h3>

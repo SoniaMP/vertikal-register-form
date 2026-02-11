@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import type { FederationSubtype } from "@prisma/client";
+import type { LicenseSubtype } from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +19,8 @@ import {
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  federationTypeId: string;
-  subtype?: FederationSubtype;
+  licenseTypeId: string;
+  subtype?: LicenseSubtype;
 };
 
 const INITIAL_STATE = { success: false, error: undefined };
@@ -28,14 +28,14 @@ const INITIAL_STATE = { success: false, error: undefined };
 export function SubtypeFormDialog({
   open,
   onOpenChange,
-  federationTypeId,
+  licenseTypeId,
   subtype,
 }: Props) {
   const isEditing = !!subtype;
 
   const action = isEditing
     ? updateSubtype.bind(null, subtype.id)
-    : createSubtype.bind(null, federationTypeId);
+    : createSubtype.bind(null, licenseTypeId);
 
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
 

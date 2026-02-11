@@ -7,9 +7,9 @@ const mockTransaction = vi.fn();
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    registration: { count: (...args: unknown[]) => mockCount(...args) },
-    categoryPrice: { deleteMany: (...args: unknown[]) => mockDeleteMany(...args) },
-    federationSubtype: { delete: (...args: unknown[]) => mockDelete(...args) },
+    membership: { count: (...args: unknown[]) => mockCount(...args) },
+    licenseOffering: { deleteMany: (...args: unknown[]) => mockDeleteMany(...args) },
+    licenseSubtype: { delete: (...args: unknown[]) => mockDelete(...args) },
     $transaction: (fn: (tx: unknown) => Promise<void>) => mockTransaction(fn),
   },
 }));
@@ -27,14 +27,14 @@ describe("deleteSubtype", () => {
     vi.clearAllMocks();
     mockTransaction.mockImplementation(async (fn: (tx: unknown) => Promise<void>) => {
       const tx = {
-        categoryPrice: { deleteMany: mockDeleteMany },
-        federationSubtype: { delete: mockDelete },
+        licenseOffering: { deleteMany: mockDeleteMany },
+        licenseSubtype: { delete: mockDelete },
       };
       return fn(tx);
     });
   });
 
-  it("deletes subtype when no registrations exist", async () => {
+  it("deletes subtype when no memberships exist", async () => {
     const { deleteSubtype } = await import("../subtype-actions");
     mockCount.mockResolvedValue(0);
 
@@ -42,12 +42,12 @@ describe("deleteSubtype", () => {
 
     expect(result).toEqual({ success: true });
     expect(mockCount).toHaveBeenCalledWith({
-      where: { federationSubtypeId: "sub-1" },
+      where: { subtypeId: "sub-1" },
     });
     expect(mockTransaction).toHaveBeenCalled();
   });
 
-  it("returns error when registrations exist", async () => {
+  it("returns error when memberships exist", async () => {
     const { deleteSubtype } = await import("../subtype-actions");
     mockCount.mockResolvedValue(3);
 
@@ -55,7 +55,7 @@ describe("deleteSubtype", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "No se puede eliminar: tiene registros asociados",
+      error: "No se puede eliminar: tiene membresías asociadas",
     });
     expect(mockTransaction).not.toHaveBeenCalled();
   });

@@ -9,20 +9,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { toggleRegistrationFederated } from "@/app/admin/(dashboard)/registros/actions";
+import { toggleMembershipFederated } from "@/app/admin/(dashboard)/registros/membership-actions";
 
 type Props = {
-  registrationId: string;
+  membershipId: string;
   isFederated: boolean;
 };
 
-export function FederatedToggle({ registrationId, isFederated }: Props) {
+export function FederatedToggle({ membershipId, isFederated }: Props) {
   const [isPending, startTransition] = useTransition();
 
   function handleSelect(value: boolean) {
     if (value === isFederated) return;
     startTransition(async () => {
-      await toggleRegistrationFederated(registrationId, value);
+      await toggleMembershipFederated(membershipId, value);
     });
   }
 
@@ -39,7 +39,7 @@ export function FederatedToggle({ registrationId, isFederated }: Props) {
               isPending && "opacity-50",
             )}
           >
-            {isFederated ? "Sí" : "No"}
+            {isFederated ? "Si" : "No"}
           </Badge>
         </button>
       </PopoverTrigger>
@@ -51,7 +51,7 @@ export function FederatedToggle({ registrationId, isFederated }: Props) {
             className="justify-start text-xs"
             onClick={() => handleSelect(true)}
           >
-            <Badge className="bg-green-600 text-white mr-1.5">Sí</Badge>
+            <Badge className="bg-green-600 text-white mr-1.5">Si</Badge>
             Federado
           </Button>
           <Button

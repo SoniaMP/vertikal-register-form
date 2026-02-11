@@ -14,3 +14,18 @@ export async function getMembershipFee(): Promise<number> {
     ? parsed
     : DEFAULT_MEMBERSHIP_FEE;
 }
+
+/**
+ * Get the currently active season, or throw if none exists.
+ */
+export async function getActiveSeason() {
+  const season = await prisma.season.findFirst({
+    where: { isActive: true },
+  });
+
+  if (!season) {
+    throw new Error("No active season configured");
+  }
+
+  return season;
+}

@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { normalizeDni } from "@/helpers/migration-helpers";
 import { SPANISH_DNI_REGEX } from "@/validations/registration";
 
 export type RenewalSearchResult = {
@@ -14,47 +15,49 @@ export type RenewalSearchResult = {
   city: string;
   postalCode: string;
   province: string;
-  federationTypeId: string;
-  federationSubtypeId: string;
+  typeId: string;
+  subtypeId: string;
   categoryId: string;
   supplementIds: string[];
 };
 
-export async function findRegistrationByDni(
+export async function findMemberByDni(
   dni: string,
 ): Promise<RenewalSearchResult | null> {
   if (!SPANISH_DNI_REGEX.test(dni)) {
     return null;
   }
 
-  const registration = await prisma.registration.findFirst({
-    where: {
-      OR: [{ dni: dni.toUpperCase() }, { dni: dni.toLowerCase() }],
-    },
-    orderBy: { createdAt: "desc" },
-    select: {
-      firstName: true,
-      lastName: true,
-      email: true,
-      phone: true,
-      dni: true,
-      dateOfBirth: true,
-      address: true,
-      city: true,
-      postalCode: true,
-      province: true,
-      federationTypeId: true,
-      federationSubtypeId: true,
-      categoryId: true,
-      supplements: { select: { supplementId: true } },
+  const member = await prisma.member.findUnique({
+    where: { dni: normalizeDni(dni) },
+    include: {
+      memberships: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        include: { supplements: { select: { supplementId: true } } },
+      },
     },
   });
 
-  if (!registration) return null;
+  if (!member) return null;
+
+  const latestMembership = member.memberships[0];
 
   return {
-    ...registration,
-    supplements: undefined,
-    supplementIds: registration.supplements.map((s) => s.supplementId),
-  } as RenewalSearchResult;
+    firstName: member.firstName,
+    lastName: member.lastName,
+    email: member.email,
+    phone: member.phone,
+    dni: member.dni,
+    dateOfBirth: member.dateOfBirth,
+    address: member.address,
+    city: member.city,
+    postalCode: member.postalCode,
+    province: member.province,
+    typeId: latestMembership?.typeId ?? "",
+    subtypeId: latestMembership?.subtypeId ?? "",
+    categoryId: latestMembership?.categoryId ?? "",
+    supplementIds:
+      latestMembership?.supplements.map((s) => s.supplementId) ?? [],
+  };
 }

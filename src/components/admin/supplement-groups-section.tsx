@@ -1,32 +1,39 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { SupplementGroup, Supplement } from "@prisma/client";
+import type {
+  SupplementGroup,
+  Supplement,
+  SupplementGroupPrice,
+} from "@prisma/client";
 import { ChevronDown, ChevronUp, Plus, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/helpers/price-calculator";
-import { deleteSupplementGroup } from "@/app/admin/(dashboard)/tipos-federacion/actions";
+import { Input } from "@/components/ui/input";
+import {
+  deleteSupplementGroup,
+  upsertSupplementGroupPrice,
+} from "@/app/admin/(dashboard)/tipos-federacion/actions";
 import { SupplementGroupFormDialog } from "./supplement-group-form-dialog";
 
-type SupplementGroupWithSupplements = SupplementGroup & {
+type SupplementGroupWithPrices = SupplementGroup & {
   supplements: Supplement[];
+  groupPrices: SupplementGroupPrice[];
 };
 
 type Props = {
-  federationTypeId: string;
-  supplementGroups: SupplementGroupWithSupplements[];
+  supplementGroups: SupplementGroupWithPrices[];
+  seasonId: string;
 };
 
 export function SupplementGroupsSection({
-  federationTypeId,
   supplementGroups,
+  seasonId,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
-    <div className="border-t px-4 py-3">
+    <div className="rounded-lg border px-4 py-3">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -48,7 +55,7 @@ export function SupplementGroupsSection({
             </p>
           )}
           {supplementGroups.map((grp) => (
-            <GroupRow key={grp.id} group={grp} />
+            <GroupRow key={grp.id} group={grp} seasonId={seasonId} />
           ))}
           <Button
             variant="outline"
@@ -62,7 +69,6 @@ export function SupplementGroupsSection({
           <SupplementGroupFormDialog
             open={isCreateOpen}
             onOpenChange={setIsCreateOpen}
-            federationTypeId={federationTypeId}
           />
         </div>
       )}
@@ -70,13 +76,29 @@ export function SupplementGroupsSection({
   );
 }
 
-function GroupRow({ group }: { group: SupplementGroupWithSupplements }) {
+function GroupRow({
+  group,
+  seasonId,
+}: {
+  group: SupplementGroupWithPrices;
+  seasonId: string;
+}) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const seasonPrice = group.groupPrices[0]?.price;
 
   function handleDelete() {
     startTransition(async () => {
       await deleteSupplementGroup(group.id);
+    });
+  }
+
+  function handlePriceSave(value: string) {
+    const num = parseFloat(value);
+    if (isNaN(num) || num <= 0) return;
+    const cents = Math.round(num * 100);
+    startTransition(async () => {
+      await upsertSupplementGroupPrice(group.id, seasonId, cents);
     });
   }
 
@@ -85,7 +107,16 @@ function GroupRow({ group }: { group: SupplementGroupWithSupplements }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
           <span className="font-medium truncate">{group.name}</span>
-          <Badge variant="outline">{formatPrice(group.price)}</Badge>
+          <Input
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={seasonPrice ? (seasonPrice / 100).toFixed(2) : ""}
+            placeholder="€"
+            className="h-7 w-20 text-center text-xs"
+            disabled={isPending}
+            onBlur={(e) => handlePriceSave(e.target.value)}
+          />
         </div>
         <div className="flex items-center gap-1">
           <Button
@@ -117,7 +148,6 @@ function GroupRow({ group }: { group: SupplementGroupWithSupplements }) {
       <SupplementGroupFormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        federationTypeId={group.federationTypeId}
         group={group}
       />
     </div>

@@ -15,11 +15,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatPrice } from "@/helpers/price-calculator";
-import type { Category } from "@/types";
+import type { CategoryOffering } from "@/types";
 import type { RegistrationInput } from "@/validations/registration";
 
 type CategorySelectorProps = {
-  categories: Category[];
+  categories: CategoryOffering[];
   selectedSubtypeId: string;
 };
 

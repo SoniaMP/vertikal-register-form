@@ -8,11 +8,11 @@ import { Separator } from "@/components/ui/separator";
 import { PriceSummary } from "./price-summary";
 import { DataProtectionDialog } from "./data-protection-dialog";
 import { calculateTotal } from "@/helpers/price-calculator";
-import type { FederationType } from "@/types";
+import type { LicenseCatalogType } from "@/types";
 import type { RegistrationInput } from "@/validations/registration";
 
 type RegistrationSummaryProps = {
-  federationTypes: FederationType[];
+  licenseTypes: LicenseCatalogType[];
   membershipFee: number;
   onEdit: (step: number) => void;
   onSubmit: () => void;
@@ -20,7 +20,7 @@ type RegistrationSummaryProps = {
 };
 
 export function RegistrationSummary({
-  federationTypes,
+  licenseTypes,
   membershipFee,
   onEdit,
   onSubmit,
@@ -30,20 +30,20 @@ export function RegistrationSummary({
   const form = useFormContext<RegistrationInput>();
   const data = form.getValues();
 
-  const federation = federationTypes.find(
-    (ft) => ft.id === data.federationTypeId,
+  const licenseType = licenseTypes.find(
+    (lt) => lt.id === data.typeId,
   );
-  const subtype = federation?.subtypes.find(
-    (st) => st.id === data.federationSubtypeId,
+  const subtype = licenseType?.subtypes.find(
+    (st) => st.id === data.subtypeId,
   );
-  const category = federation?.categories.find(
+  const category = licenseType?.categories.find(
     (c) => c.id === data.categoryId,
   );
   const categoryPrice = category?.prices.find(
-    (p) => p.subtypeId === data.federationSubtypeId,
+    (p) => p.subtypeId === data.subtypeId,
   );
   const selectedSupplements =
-    federation?.supplements.filter((s) =>
+    licenseType?.supplements.filter((s) =>
       data.supplementIds?.includes(s.id),
     ) ?? [];
 
@@ -68,8 +68,8 @@ export function RegistrationSummary({
 
       <Separator />
 
-      <SummarySection title="Federativa y suplementos" onEdit={() => onEdit(2)}>
-        <SummaryRow label="Tipo" value={federation?.name ?? ""} />
+      <SummarySection title="Licencia y suplementos" onEdit={() => onEdit(2)}>
+        <SummaryRow label="Tipo" value={licenseType?.name ?? ""} />
         {subtype && (
           <SummaryRow label="Modalidad" value={subtype.name} />
         )}

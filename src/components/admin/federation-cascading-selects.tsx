@@ -11,47 +11,45 @@ import {
 } from "@/components/ui/select";
 
 type SubtypeOption = { id: string; name: string };
-type CategoryOption = { id: string; name: string };
 
-export type FederationTypeOption = {
+export type LicenseTypeOption = {
   id: string;
   name: string;
   subtypes: SubtypeOption[];
-  categories: CategoryOption[];
 };
 
 type Props = {
-  federationTypes: FederationTypeOption[];
+  licenseTypes: LicenseTypeOption[];
   defaultTypeId?: string;
   defaultSubtypeId?: string;
   defaultCategoryId?: string;
 };
 
 export function FederationCascadingSelects({
-  federationTypes,
+  licenseTypes,
   defaultTypeId = "",
   defaultSubtypeId = "",
   defaultCategoryId = "",
 }: Props) {
   const [selectedTypeId, setSelectedTypeId] = useState(defaultTypeId);
-  const selectedType = federationTypes.find((t) => t.id === selectedTypeId);
+  const selectedType = licenseTypes.find((t) => t.id === selectedTypeId);
 
   return (
     <>
       <div className="space-y-1">
-        <Label htmlFor="federationTypeId">Tipo de federativa</Label>
+        <Label htmlFor="typeId">Tipo de licencia</Label>
         <Select
-          name="federationTypeId"
+          name="typeId"
           defaultValue={defaultTypeId}
           onValueChange={setSelectedTypeId}
         >
-          <SelectTrigger id="federationTypeId">
+          <SelectTrigger id="typeId">
             <SelectValue placeholder="Seleccionar..." />
           </SelectTrigger>
           <SelectContent>
-            {federationTypes.map((ft) => (
-              <SelectItem key={ft.id} value={ft.id}>
-                {ft.name}
+            {licenseTypes.map((lt) => (
+              <SelectItem key={lt.id} value={lt.id}>
+                {lt.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -59,15 +57,15 @@ export function FederationCascadingSelects({
       </div>
 
       <div className="space-y-1">
-        <Label htmlFor="federationSubtypeId">Subtipo</Label>
+        <Label htmlFor="subtypeId">Subtipo</Label>
         <Select
           key={`subtype-${selectedTypeId}`}
-          name="federationSubtypeId"
+          name="subtypeId"
           defaultValue={
             selectedTypeId === defaultTypeId ? defaultSubtypeId : ""
           }
         >
-          <SelectTrigger id="federationSubtypeId">
+          <SelectTrigger id="subtypeId">
             <SelectValue placeholder="Seleccionar..." />
           </SelectTrigger>
           <SelectContent>
@@ -82,24 +80,13 @@ export function FederationCascadingSelects({
 
       <div className="space-y-1">
         <Label htmlFor="categoryId">Categoría</Label>
-        <Select
-          key={`category-${selectedTypeId}`}
+        <input
+          type="hidden"
           name="categoryId"
-          defaultValue={
+          value={
             selectedTypeId === defaultTypeId ? defaultCategoryId : ""
           }
-        >
-          <SelectTrigger id="categoryId">
-            <SelectValue placeholder="Seleccionar..." />
-          </SelectTrigger>
-          <SelectContent>
-            {(selectedType?.categories ?? []).map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        />
       </div>
     </>
   );

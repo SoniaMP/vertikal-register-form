@@ -1,14 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { GET } from "../route";
 
-const mockFindMany = vi.fn();
+const mockFetchLicenseCatalog = vi.fn();
 
-vi.mock("@/lib/prisma", () => ({
-  prisma: {
-    federationType: {
-      findMany: (...args: unknown[]) => mockFindMany(...args),
-    },
-  },
+vi.mock("@/lib/license-catalog", () => ({
+  fetchLicenseCatalog: (...args: unknown[]) => mockFetchLicenseCatalog(...args),
 }));
 
 describe("GET /api/federation-types", () => {
@@ -16,47 +12,36 @@ describe("GET /api/federation-types", () => {
     vi.clearAllMocks();
   });
 
-  it("returns active federation types with subtypes and supplements", async () => {
-    const mockData = [
+  it("returns the license catalog", async () => {
+    const mockCatalog = [
       {
         id: "1",
         name: "Nacional",
         description: "Federativa nacional",
         active: true,
         subtypes: [
-          { id: "st1", name: "Basica", price: 4500, active: true },
+          { id: "st1", name: "Basica", description: null, active: true, licenseTypeId: "1" },
         ],
-        supplements: [
-          { id: "s1", name: "Seguro", price: 1000, active: true },
+        categories: [
+          { id: "cat1", name: "Adulto", description: null, active: true, prices: [] },
         ],
+        supplements: [],
+        supplementGroups: [],
       },
     ];
 
-    mockFindMany.mockResolvedValue(mockData);
+    mockFetchLicenseCatalog.mockResolvedValue(mockCatalog);
 
     const response = await GET();
     const data = await response.json();
 
     expect(response.status).toBe(200);
-    expect(data).toEqual(mockData);
-    expect(mockFindMany).toHaveBeenCalledWith({
-      where: { active: true },
-      include: {
-        subtypes: {
-          where: { active: true },
-          orderBy: { price: "asc" },
-        },
-        supplements: {
-          where: { active: true },
-          orderBy: { name: "asc" },
-        },
-      },
-      orderBy: { name: "asc" },
-    });
+    expect(data).toEqual(mockCatalog);
+    expect(mockFetchLicenseCatalog).toHaveBeenCalledOnce();
   });
 
   it("returns empty array when no active types exist", async () => {
-    mockFindMany.mockResolvedValue([]);
+    mockFetchLicenseCatalog.mockResolvedValue([]);
 
     const response = await GET();
     const data = await response.json();

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   personalDataSchema,
-  federationSelectionSchema,
+  licenseSelectionSchema,
   registrationSchema,
 } from "../registration";
 
@@ -113,46 +113,61 @@ describe("personalDataSchema", () => {
   });
 });
 
-describe("federationSelectionSchema", () => {
+describe("licenseSelectionSchema", () => {
   it("accepts valid selection with supplements", () => {
-    const result = federationSelectionSchema.safeParse({
-      federationTypeId: "abc123",
-      federationSubtypeId: "sub123",
+    const result = licenseSelectionSchema.safeParse({
+      typeId: "abc123",
+      subtypeId: "sub123",
+      categoryId: "cat123",
       supplementIds: ["sup1", "sup2"],
     });
     expect(result.success).toBe(true);
   });
 
   it("accepts selection without supplements", () => {
-    const result = federationSelectionSchema.safeParse({
-      federationTypeId: "abc123",
-      federationSubtypeId: "sub123",
+    const result = licenseSelectionSchema.safeParse({
+      typeId: "abc123",
+      subtypeId: "sub123",
+      categoryId: "cat123",
       supplementIds: [],
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects empty federation type id", () => {
-    const result = federationSelectionSchema.safeParse({
-      federationTypeId: "",
-      federationSubtypeId: "sub123",
+  it("rejects empty type id", () => {
+    const result = licenseSelectionSchema.safeParse({
+      typeId: "",
+      subtypeId: "sub123",
+      categoryId: "cat123",
       supplementIds: [],
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects empty federation subtype id", () => {
-    const result = federationSelectionSchema.safeParse({
-      federationTypeId: "abc123",
-      federationSubtypeId: "",
+  it("rejects empty subtype id", () => {
+    const result = licenseSelectionSchema.safeParse({
+      typeId: "abc123",
+      subtypeId: "",
+      categoryId: "cat123",
       supplementIds: [],
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing federation subtype id", () => {
-    const result = federationSelectionSchema.safeParse({
-      federationTypeId: "abc123",
+  it("rejects missing subtype id", () => {
+    const result = licenseSelectionSchema.safeParse({
+      typeId: "abc123",
+      categoryId: "cat123",
+      supplementIds: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects empty category id", () => {
+    const result = licenseSelectionSchema.safeParse({
+      typeId: "abc123",
+      subtypeId: "sub123",
+      categoryId: "",
       supplementIds: [],
     });
     expect(result.success).toBe(false);
@@ -163,26 +178,29 @@ describe("registrationSchema", () => {
   it("accepts complete valid registration", () => {
     const result = registrationSchema.safeParse({
       ...validPersonalData,
-      federationTypeId: "fed1",
-      federationSubtypeId: "sub1",
+      typeId: "fed1",
+      subtypeId: "sub1",
+      categoryId: "cat1",
       supplementIds: ["sup1"],
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects registration missing federation type", () => {
+  it("rejects registration missing type", () => {
     const result = registrationSchema.safeParse({
       ...validPersonalData,
-      federationSubtypeId: "sub1",
+      subtypeId: "sub1",
+      categoryId: "cat1",
       supplementIds: ["sup1"],
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects registration missing federation subtype", () => {
+  it("rejects registration missing subtype", () => {
     const result = registrationSchema.safeParse({
       ...validPersonalData,
-      federationTypeId: "fed1",
+      typeId: "fed1",
+      categoryId: "cat1",
       supplementIds: ["sup1"],
     });
     expect(result.success).toBe(false);
@@ -192,8 +210,9 @@ describe("registrationSchema", () => {
     const result = registrationSchema.safeParse({
       ...validPersonalData,
       email: "bad",
-      federationTypeId: "fed1",
-      federationSubtypeId: "sub1",
+      typeId: "fed1",
+      subtypeId: "sub1",
+      categoryId: "cat1",
       supplementIds: [],
     });
     expect(result.success).toBe(false);

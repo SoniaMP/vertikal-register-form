@@ -2,10 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import {
-  requireAuth,
-  type ActionResult,
-} from "../tipos-federacion/actions/federation-type-actions";
+import { requireAuth, type ActionResult } from "@/lib/actions";
 
 export async function updateMembershipFee(
   _prevState: ActionResult,

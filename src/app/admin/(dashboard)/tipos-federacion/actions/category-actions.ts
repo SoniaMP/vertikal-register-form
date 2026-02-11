@@ -3,23 +3,22 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import {
-  categorySchema,
-  categoryPriceSchema,
-} from "@/validations/federation-type";
-import { requireAuth, type ActionResult } from "./federation-type-actions";
-import { parsePrice } from "./utils";
+import { categorySchema } from "@/validations/license";
+import { requireAuth, type ActionResult } from "@/lib/actions";
 
-const batchPriceSchema = z.array(
-  z.object({
-    categoryId: z.string().min(1),
-    subtypeId: z.string().min(1),
-    price: z.number().int().positive().nullable(),
-  }),
-);
+const batchOfferingSchema = z.object({
+  seasonId: z.string().min(1),
+  typeId: z.string().min(1),
+  entries: z.array(
+    z.object({
+      categoryId: z.string().min(1),
+      subtypeId: z.string().min(1),
+      price: z.number().int().positive().nullable(),
+    }),
+  ),
+});
 
 export async function createCategory(
-  federationTypeId: string,
   _prevState: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
@@ -36,9 +35,7 @@ export async function createCategory(
     return { success: false, error: firstError };
   }
 
-  await prisma.category.create({
-    data: { ...parsed.data, federationTypeId },
-  });
+  await prisma.category.create({ data: parsed.data });
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }
@@ -85,19 +82,19 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   const authError = await requireAuth();
   if (authError) return authError;
 
-  const registrationCount = await prisma.registration.count({
+  const membershipCount = await prisma.membership.count({
     where: { categoryId: id },
   });
 
-  if (registrationCount > 0) {
+  if (membershipCount > 0) {
     return {
       success: false,
-      error: "No se puede eliminar: tiene registros asociados",
+      error: "No se puede eliminar: tiene membresías asociadas",
     };
   }
 
   await prisma.$transaction(async (tx) => {
-    await tx.categoryPrice.deleteMany({ where: { categoryId: id } });
+    await tx.licenseOffering.deleteMany({ where: { categoryId: id } });
     await tx.category.delete({ where: { id } });
   });
 
@@ -105,65 +102,47 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   return { success: true };
 }
 
-export async function batchUpsertCategoryPrices(
+export async function batchUpsertOfferings(
+  seasonId: string,
+  typeId: string,
   entries: { categoryId: string; subtypeId: string; price: number | null }[],
 ): Promise<ActionResult> {
   const authError = await requireAuth();
   if (authError) return authError;
 
-  const parsed = batchPriceSchema.safeParse(entries);
+  const parsed = batchOfferingSchema.safeParse({ seasonId, typeId, entries });
   if (!parsed.success) {
     const firstError = parsed.error.issues[0]?.message ?? "Datos inválidos";
     return { success: false, error: firstError };
   }
 
-  const toUpsert = parsed.data.filter(
+  const toUpsert = parsed.data.entries.filter(
     (e): e is (typeof e) & { price: number } => e.price !== null,
   );
-  const toDelete = parsed.data.filter((e) => e.price === null);
+  const toDelete = parsed.data.entries.filter((e) => e.price === null);
 
   await prisma.$transaction([
     ...toUpsert.map(({ categoryId, subtypeId, price }) =>
-      prisma.categoryPrice.upsert({
-        where: { categoryId_subtypeId: { categoryId, subtypeId } },
-        create: { categoryId, subtypeId, price },
+      prisma.licenseOffering.upsert({
+        where: {
+          seasonId_typeId_subtypeId_categoryId: {
+            seasonId,
+            typeId,
+            subtypeId,
+            categoryId,
+          },
+        },
+        create: { seasonId, typeId, subtypeId, categoryId, price },
         update: { price },
       }),
     ),
     ...toDelete.map(({ categoryId, subtypeId }) =>
-      prisma.categoryPrice.deleteMany({
-        where: { categoryId, subtypeId },
+      prisma.licenseOffering.deleteMany({
+        where: { seasonId, typeId, subtypeId, categoryId },
       }),
     ),
   ]);
 
-  revalidatePath("/admin/tipos-federacion");
-  return { success: true };
-}
-
-export async function upsertCategoryPrice(
-  categoryId: string,
-  _prevState: ActionResult,
-  formData: FormData,
-): Promise<ActionResult> {
-  const authError = await requireAuth();
-  if (authError) return authError;
-
-  const subtypeId = formData.get("subtypeId") as string;
-  const price = parsePrice(formData);
-
-  const parsed = categoryPriceSchema.safeParse({ subtypeId, price });
-
-  if (!parsed.success) {
-    const firstError = parsed.error.issues[0]?.message ?? "Datos inválidos";
-    return { success: false, error: firstError };
-  }
-
-  await prisma.categoryPrice.upsert({
-    where: { categoryId_subtypeId: { categoryId, subtypeId } },
-    create: { categoryId, subtypeId, price },
-    update: { price },
-  });
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }

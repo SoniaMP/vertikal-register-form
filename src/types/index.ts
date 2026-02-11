@@ -8,57 +8,35 @@ export const PAYMENT_STATUS = {
 export type PaymentStatus =
   (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
 
-export type SupplementGroup = {
+export type SupplementGroupSummary = {
   id: string;
   name: string;
   price: number;
-  federationTypeId: string;
 };
 
-export type Supplement = {
+export type SupplementSummary = {
   id: string;
   name: string;
   description: string;
   price: number | null;
   active: boolean;
-  federationTypeId: string;
   supplementGroupId: string | null;
-  supplementGroup: SupplementGroup | null;
+  supplementGroup: SupplementGroupSummary | null;
 };
 
-export type FederationSubtype = {
+export type LicenseSubtypeSummary = {
   id: string;
   name: string;
   description: string;
   active: boolean;
-  federationTypeId: string;
+  licenseTypeId: string;
 };
 
-export type CategoryPrice = {
-  id: string;
-  categoryId: string;
-  subtypeId: string;
-  price: number;
-};
-
-export type Category = {
+export type LicenseTypeSummary = {
   id: string;
   name: string;
   description: string;
   active: boolean;
-  federationTypeId: string;
-  prices: CategoryPrice[];
-};
-
-export type FederationType = {
-  id: string;
-  name: string;
-  description: string;
-  active: boolean;
-  subtypes: FederationSubtype[];
-  supplements: Supplement[];
-  categories: Category[];
-  supplementGroups: SupplementGroup[];
 };
 
 export type PersonalData = {
@@ -74,14 +52,12 @@ export type PersonalData = {
   province: string;
 };
 
-export type FederationSelection = {
-  federationTypeId: string;
-  federationSubtypeId: string;
+export type LicenseSelection = {
+  typeId: string;
+  subtypeId: string;
   categoryId: string;
   supplementIds: string[];
 };
-
-export type RegistrationFormData = PersonalData & FederationSelection;
 
 export type SupplementBreakdownItem = {
   name: string;
@@ -97,41 +73,28 @@ export type PriceBreakdown = {
   total: number;
 };
 
-export type RegistrationRecord = {
+// -- License catalog (used by registration wizard) --
+
+export type CategoryOffering = {
   id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  dni: string;
-  dateOfBirth: string;
-  address: string;
-  city: string;
-  postalCode: string;
-  province: string;
-  federationTypeId: string;
-  federationSubtypeId: string;
-  categoryId: string;
-  totalAmount: number;
-  paymentStatus: PaymentStatus;
-  stripeSessionId: string | null;
-  stripePaymentId: string | null;
-  confirmationSent: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  federationType: FederationType;
-  federationSubtype: FederationSubtype;
-  category: Category;
-  supplements: RegistrationSupplementRecord[];
+  name: string;
+  description: string;
+  active: boolean;
+  prices: { subtypeId: string; price: number }[];
 };
 
-export type RegistrationSupplementRecord = {
-  supplementId: string;
-  priceAtTime: number;
-  supplement: Supplement;
+export type LicenseCatalogType = {
+  id: string;
+  name: string;
+  description: string;
+  active: boolean;
+  subtypes: LicenseSubtypeSummary[];
+  categories: CategoryOffering[];
+  supplements: SupplementSummary[];
+  supplementGroups: SupplementGroupSummary[];
 };
 
-// ── Membership status ──────────────────────────────
+// -- Membership status --
 
 export const MEMBERSHIP_STATUS = {
   PENDING_PAYMENT: "PENDING_PAYMENT",
@@ -143,7 +106,7 @@ export const MEMBERSHIP_STATUS = {
 export type MembershipStatus =
   (typeof MEMBERSHIP_STATUS)[keyof typeof MEMBERSHIP_STATUS];
 
-// ── Member / Membership record types ───────────────
+// -- Member / Membership record types --
 
 export type MemberRecord = {
   id: string;
@@ -165,17 +128,20 @@ export type MembershipSupplementRecord = {
   membershipId: string;
   supplementId: string;
   priceAtTime: number;
-  supplement: Supplement;
+  supplement: SupplementSummary;
 };
 
 export type MembershipRecord = {
   id: string;
   memberId: string;
-  year: number;
+  seasonId: string;
   status: MembershipStatus;
-  federationTypeId: string;
-  federationSubtypeId: string;
+  typeId: string | null;
+  subtypeId: string | null;
   categoryId: string;
+  offeringId: string | null;
+  licensePriceSnapshot: number;
+  licenseLabelSnapshot: string;
   isFederated: boolean;
   totalAmount: number;
   paymentStatus: PaymentStatus;
@@ -186,8 +152,8 @@ export type MembershipRecord = {
   createdAt: Date;
   updatedAt: Date;
   member: MemberRecord;
-  federationType: FederationType;
-  federationSubtype: FederationSubtype;
-  category: Category;
+  type: LicenseTypeSummary | null;
+  subtype: LicenseSubtypeSummary | null;
+  category: { id: string; name: string };
   supplements: MembershipSupplementRecord[];
 };

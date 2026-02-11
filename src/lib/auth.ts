@@ -24,8 +24,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!email || !password) return null;
 
-        const user = await prisma.adminUser.findUnique({
+        const user = await prisma.user.findUnique({
           where: { email },
+          include: { roles: { include: { role: true } } },
         });
 
         const passwordHash = await sha256(password);

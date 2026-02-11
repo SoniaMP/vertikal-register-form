@@ -1,0 +1,31 @@
+import type {
+  LicenseTypeWithRelations,
+  CategoryWithCount,
+} from "./license-types-table";
+import { SubtypesSection } from "./subtypes-section";
+import { OfferingMatrixSection } from "./offering-matrix-section";
+
+type Props = {
+  licenseType: LicenseTypeWithRelations;
+  categories: CategoryWithCount[];
+  seasonId: string;
+};
+
+export function DetailSections({
+  licenseType: lt,
+  categories,
+  seasonId,
+}: Props) {
+  return (
+    <>
+      <SubtypesSection licenseTypeId={lt.id} subtypes={lt.subtypes} />
+      <OfferingMatrixSection
+        seasonId={seasonId}
+        typeId={lt.id}
+        categories={categories}
+        subtypes={lt.subtypes}
+        offerings={lt.offerings}
+      />
+    </>
+  );
+}

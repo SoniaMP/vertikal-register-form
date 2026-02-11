@@ -41,13 +41,13 @@ export const personalDataSchema = z.object({
     .min(2, { message: "La provincia debe tener al menos 2 caracteres" }),
 });
 
-export const federationSelectionSchema = z.object({
-  federationTypeId: z
+export const licenseSelectionSchema = z.object({
+  typeId: z
     .string()
-    .min(1, { message: "Selecciona un tipo de federativa" }),
-  federationSubtypeId: z
+    .min(1, { message: "Selecciona un tipo de licencia" }),
+  subtypeId: z
     .string()
-    .min(1, { message: "Selecciona un subtipo de federativa" }),
+    .min(1, { message: "Selecciona un subtipo de licencia" }),
   categoryId: z
     .string()
     .min(1, { message: "Selecciona una categoría" }),
@@ -55,11 +55,9 @@ export const federationSelectionSchema = z.object({
 });
 
 export const registrationSchema = personalDataSchema.merge(
-  federationSelectionSchema,
+  licenseSelectionSchema,
 );
 
 export type PersonalDataInput = z.infer<typeof personalDataSchema>;
-export type FederationSelectionInput = z.infer<
-  typeof federationSelectionSchema
->;
+export type LicenseSelectionInput = z.infer<typeof licenseSelectionSchema>;
 export type RegistrationInput = z.infer<typeof registrationSchema>;

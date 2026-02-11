@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { registrationSchema } from "@/validations/registration";
-import { calculateTotal } from "@/helpers/price-calculator";
-import { getMembershipFee } from "@/lib/settings";
-import type { Supplement } from "@/types";
+import { getMembershipFee, getActiveSeason } from "@/lib/settings";
+import { normalizeDni } from "@/helpers/migration-helpers";
 
 export async function POST(request: NextRequest) {
   const stripe = getStripe();
@@ -19,123 +18,140 @@ export async function POST(request: NextRequest) {
   }
 
   const data = parsed.data;
+  const season = await getActiveSeason();
 
-  const federationType = await prisma.federationType.findUnique({
-    where: { id: data.federationTypeId, active: true },
+  const offering = await prisma.licenseOffering.findFirst({
+    where: {
+      seasonId: season.id,
+      typeId: data.typeId,
+      subtypeId: data.subtypeId,
+      categoryId: data.categoryId,
+    },
     include: {
-      subtypes: { where: { active: true } },
-      categories: {
-        where: { active: true },
-        include: { prices: true },
-      },
-      supplements: {
-        where: { active: true },
-        include: { supplementGroup: true },
-      },
-      supplementGroups: true,
+      type: true,
+      subtype: true,
+      category: true,
     },
   });
 
-  if (!federationType) {
+  if (!offering) {
     return NextResponse.json(
-      { error: "Tipo de federativa no encontrado" },
+      { error: "No hay oferta para esta combinación de licencia y categoría" },
       { status: 400 },
     );
   }
 
-  const subtype = federationType.subtypes.find(
-    (s) => s.id === data.federationSubtypeId,
+  const selectedSupplements = await prisma.supplement.findMany({
+    where: {
+      id: { in: data.supplementIds },
+      active: true,
+    },
+    include: { supplementGroup: true },
+  });
+
+  if (selectedSupplements.length !== data.supplementIds.length) {
+    return NextResponse.json(
+      { error: "Suplementos inválidos" },
+      { status: 400 },
+    );
+  }
+
+  const supplementPrices = await prisma.supplementPrice.findMany({
+    where: {
+      seasonId: season.id,
+      supplementId: { in: data.supplementIds },
+    },
+  });
+  const priceBySupplementId = new Map(
+    supplementPrices.map((sp) => [sp.supplementId, sp.price]),
   );
 
-  if (!subtype) {
-    return NextResponse.json(
-      { error: "Subtipo de federativa no encontrado" },
-      { status: 400 },
-    );
-  }
+  const groupIds = [
+    ...new Set(
+      selectedSupplements
+        .map((s) => s.supplementGroupId)
+        .filter((id): id is string => id !== null),
+    ),
+  ];
 
-  const category = federationType.categories.find(
-    (c) => c.id === data.categoryId,
+  const groupPrices = await prisma.supplementGroupPrice.findMany({
+    where: { seasonId: season.id, groupId: { in: groupIds } },
+  });
+  const priceByGroupId = new Map(
+    groupPrices.map((gp) => [gp.groupId, gp.price]),
   );
-
-  if (!category) {
-    return NextResponse.json(
-      { error: "Categoría no encontrada" },
-      { status: 400 },
-    );
-  }
-
-  const categoryPrice = category.prices.find(
-    (p) => p.subtypeId === subtype.id,
-  );
-
-  if (!categoryPrice) {
-    return NextResponse.json(
-      { error: "No hay precio definido para esta combinación de categoría y subtipo" },
-      { status: 400 },
-    );
-  }
-
-  const validSupplements = federationType.supplements.filter((s) =>
-    data.supplementIds.includes(s.id),
-  );
-
-  if (validSupplements.length !== data.supplementIds.length) {
-    return NextResponse.json(
-      { error: "Suplementos inválidos para esta federativa" },
-      { status: 400 },
-    );
-  }
-
-  const supplementsTyped: Supplement[] = validSupplements.map((s) => ({
-    id: s.id,
-    name: s.name,
-    description: s.description,
-    price: s.price,
-    active: s.active,
-    federationTypeId: s.federationTypeId,
-    supplementGroupId: s.supplementGroupId,
-    supplementGroup: s.supplementGroup
-      ? {
-          id: s.supplementGroup.id,
-          name: s.supplementGroup.name,
-          price: s.supplementGroup.price,
-          federationTypeId: s.supplementGroup.federationTypeId,
-        }
-      : null,
-  }));
 
   const membershipFee = await getMembershipFee();
 
-  const breakdown = calculateTotal(
-    category.name,
-    categoryPrice.price,
-    supplementsTyped,
-    membershipFee,
-  );
+  let supplementsTotal = 0;
+  const supplementLineItems: { name: string; price: number }[] = [];
+  const seenGroupIds = new Set<string>();
 
-  const registration = await prisma.registration.create({
-    data: {
+  for (const s of selectedSupplements) {
+    if (s.supplementGroupId && priceByGroupId.has(s.supplementGroupId)) {
+      if (!seenGroupIds.has(s.supplementGroupId)) {
+        seenGroupIds.add(s.supplementGroupId);
+        const groupPrice = priceByGroupId.get(s.supplementGroupId)!;
+        const groupName = s.supplementGroup?.name ?? "Grupo";
+        supplementLineItems.push({ name: groupName, price: groupPrice });
+        supplementsTotal += groupPrice;
+      }
+    } else {
+      const price = priceBySupplementId.get(s.id) ?? 0;
+      supplementLineItems.push({ name: s.name, price });
+      supplementsTotal += price;
+    }
+  }
+
+  const total = offering.price + membershipFee + supplementsTotal;
+  const licenseLabel = `${offering.type.name} - ${offering.subtype.name} - ${offering.category.name}`;
+
+  const normalizedDni = normalizeDni(data.dni);
+
+  const member = await prisma.member.upsert({
+    where: { dni: normalizedDni },
+    update: {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
       phone: data.phone,
-      dni: data.dni,
       dateOfBirth: data.dateOfBirth,
       address: data.address,
       city: data.city,
       postalCode: data.postalCode,
       province: data.province,
-      federationTypeId: data.federationTypeId,
-      federationSubtypeId: data.federationSubtypeId,
+    },
+    create: {
+      dni: normalizedDni,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      dateOfBirth: data.dateOfBirth,
+      address: data.address,
+      city: data.city,
+      postalCode: data.postalCode,
+      province: data.province,
+    },
+  });
+
+  const membership = await prisma.membership.create({
+    data: {
+      memberId: member.id,
+      seasonId: season.id,
+      typeId: data.typeId,
+      subtypeId: data.subtypeId,
       categoryId: data.categoryId,
-      totalAmount: breakdown.total,
+      offeringId: offering.id,
+      licensePriceSnapshot: offering.price,
+      licenseLabelSnapshot: licenseLabel,
+      totalAmount: total,
       paymentStatus: "PENDING",
       consentedAt: new Date(),
       supplements: {
-        create: validSupplements.map((s) => ({
+        create: selectedSupplements.map((s) => ({
           supplementId: s.id,
-          priceAtTime: s.price ?? 0,
+          priceAtTime: priceBySupplementId.get(s.id) ?? 0,
         })),
       },
     },
@@ -145,10 +161,8 @@ export async function POST(request: NextRequest) {
     {
       price_data: {
         currency: "eur",
-        product_data: {
-          name: `${federationType.name} - ${subtype.name} - ${category.name}`,
-        },
-        unit_amount: categoryPrice.price,
+        product_data: { name: licenseLabel },
+        unit_amount: offering.price,
       },
       quantity: 1,
     },
@@ -160,7 +174,7 @@ export async function POST(request: NextRequest) {
       },
       quantity: 1,
     },
-    ...breakdown.supplements.map((s) => ({
+    ...supplementLineItems.map((s) => ({
       price_data: {
         currency: "eur",
         product_data: { name: s.name },
@@ -179,21 +193,21 @@ export async function POST(request: NextRequest) {
       payment_method_types: ["card"],
       line_items: lineItems,
       customer_email: data.email,
-      metadata: { registrationId: registration.id },
+      metadata: { membershipId: membership.id },
       success_url: `${appUrl}/registro/exito?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/registro/cancelado?registration_id=${registration.id}`,
+      cancel_url: `${appUrl}/registro/cancelado?membership_id=${membership.id}`,
     });
 
-    await prisma.registration.update({
-      where: { id: registration.id },
+    await prisma.membership.update({
+      where: { id: membership.id },
       data: { stripeSessionId: session.id },
     });
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    await prisma.registration.update({
-      where: { id: registration.id },
-      data: { paymentStatus: "FAILED" },
+    await prisma.membership.update({
+      where: { id: membership.id },
+      data: { paymentStatus: "FAILED", status: "CANCELLED" },
     });
 
     const message =

@@ -13,17 +13,41 @@ function hashPassword(password: string): string {
 }
 
 async function main() {
+  // Ensure ADMIN role exists
+  const adminRole = await prisma.role.upsert({
+    where: { name: "ADMIN" },
+    update: {},
+    create: { name: "ADMIN" },
+  });
+
   // Create admin user if it does not exist (password: admin123 — change in production!)
-  const existingAdmin = await prisma.adminUser.findFirst({
+  const existingAdmin = await prisma.user.findUnique({
     where: { email: "admin@vertikal.club" },
   });
 
   if (!existingAdmin) {
-    await prisma.adminUser.create({
+    await prisma.user.create({
       data: {
         email: "admin@vertikal.club",
         passwordHash: hashPassword("admin123"),
         name: "Admin",
+        roles: { create: { roleId: adminRole.id } },
+      },
+    });
+  }
+
+  // Ensure an active season exists
+  const activeSeason = await prisma.season.findFirst({
+    where: { isActive: true },
+  });
+
+  if (!activeSeason) {
+    await prisma.season.create({
+      data: {
+        name: "2025-2026",
+        startDate: new Date("2025-09-01"),
+        endDate: new Date("2026-08-31"),
+        isActive: true,
       },
     });
   }

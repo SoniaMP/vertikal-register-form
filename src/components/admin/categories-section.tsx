@@ -1,40 +1,27 @@
 "use client";
 
-import { type FormEvent, useState, useTransition } from "react";
-import type {
-  Category,
-  CategoryPrice,
-  FederationSubtype,
-} from "@prisma/client";
+import { useState } from "react";
+import type { Category } from "@prisma/client";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { CategoryActions } from "./category-actions";
 import { CategoryFormDialog } from "./category-form-dialog";
-import { batchUpsertCategoryPrices } from "@/app/admin/(dashboard)/tipos-federacion/actions";
 
-type CategoryWithPrices = Category & {
-  prices: CategoryPrice[];
-  _count: { registrations: number };
+type CategoryWithCount = Category & {
+  _count: { memberships: number };
 };
 
 type Props = {
-  federationTypeId: string;
-  categories: CategoryWithPrices[];
-  subtypes: FederationSubtype[];
+  categories: CategoryWithCount[];
 };
 
-export function CategoriesSection({
-  federationTypeId,
-  categories,
-  subtypes,
-}: Props) {
+export function CategoriesSection({ categories }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
-    <div className="border-t px-4 py-3">
+    <div className="rounded-lg border px-4 py-3">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -49,14 +36,15 @@ export function CategoriesSection({
       </button>
 
       {isExpanded && (
-        <div className="mt-3 space-y-3">
-          {categories.length === 0 ? (
+        <div className="mt-3 space-y-2">
+          {categories.length === 0 && (
             <p className="text-sm text-muted-foreground">
               Sin categorías todavía.
             </p>
-          ) : (
-            <PriceTable categories={categories} subtypes={subtypes} />
           )}
+          {categories.map((cat) => (
+            <CategoryRow key={cat.id} category={cat} />
+          ))}
           <Button
             variant="outline"
             size="sm"
@@ -68,7 +56,6 @@ export function CategoriesSection({
           <CategoryFormDialog
             open={isCreateOpen}
             onOpenChange={setIsCreateOpen}
-            federationTypeId={federationTypeId}
           />
         </div>
       )}
@@ -76,130 +63,19 @@ export function CategoriesSection({
   );
 }
 
-function PriceTable({
-  categories,
-  subtypes,
-}: {
-  categories: CategoryWithPrices[];
-  subtypes: FederationSubtype[];
-}) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string>();
-
-  if (subtypes.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Añade subtipos para configurar precios.
-      </p>
-    );
-  }
-
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(undefined);
-    const fd = new FormData(e.currentTarget);
-    const entries = buildEntries(fd, categories, subtypes);
-
-    startTransition(async () => {
-      const result = await batchUpsertCategoryPrices(entries);
-      if (!result.success) setError(result.error);
-    });
-  };
-
+function CategoryRow({ category }: { category: CategoryWithCount }) {
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left">
-              <th className="pb-2 pr-3 font-medium">Categoría</th>
-              {subtypes.map((s) => (
-                <th
-                  key={s.id}
-                  className="pb-2 px-2 font-medium text-center min-w-[100px]"
-                >
-                  {s.name}
-                </th>
-              ))}
-              <th className="pb-2 pl-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((cat) => (
-              <PriceRow key={cat.id} category={cat} subtypes={subtypes} />
-            ))}
-          </tbody>
-        </table>
+    <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="font-medium truncate">{category.name}</span>
+        <Badge variant={category.active ? "default" : "secondary"}>
+          {category.active ? "Activo" : "Inactivo"}
+        </Badge>
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button size="sm" type="submit" disabled={isPending}>
-        {isPending ? "Guardando..." : "Guardar precios"}
-      </Button>
-    </form>
+      <CategoryActions
+        category={category}
+        membershipCount={category._count.memberships}
+      />
+    </div>
   );
-}
-
-function PriceRow({
-  category,
-  subtypes,
-}: {
-  category: CategoryWithPrices;
-  subtypes: FederationSubtype[];
-}) {
-  const getDefault = (subtypeId: string) => {
-    const p = category.prices.find((cp) => cp.subtypeId === subtypeId);
-    return p ? (p.price / 100).toFixed(2) : "";
-  };
-
-  return (
-    <tr className="border-b last:border-0">
-      <td className="py-2 pr-3">
-        <div className="flex items-center gap-2">
-          <span className="font-medium truncate">{category.name}</span>
-          <Badge
-            variant={category.active ? "default" : "secondary"}
-            className="text-xs"
-          >
-            {category.active ? "Activo" : "Inactivo"}
-          </Badge>
-        </div>
-      </td>
-      {subtypes.map((sub) => (
-        <td key={sub.id} className="py-2 px-2">
-          <Input
-            name={`price-${category.id}-${sub.id}`}
-            type="number"
-            step="0.01"
-            min="0"
-            defaultValue={getDefault(sub.id)}
-            placeholder="€"
-            className="h-8 w-24 text-center"
-          />
-        </td>
-      ))}
-      <td className="py-2 pl-2">
-        <CategoryActions
-          category={category}
-          registrationCount={category._count.registrations}
-        />
-      </td>
-    </tr>
-  );
-}
-
-function buildEntries(
-  fd: FormData,
-  categories: CategoryWithPrices[],
-  subtypes: FederationSubtype[],
-) {
-  const entries: { categoryId: string; subtypeId: string; price: number | null }[] = [];
-  for (const cat of categories) {
-    for (const sub of subtypes) {
-      const raw = fd.get(`price-${cat.id}-${sub.id}`) as string;
-      const num = parseFloat(raw);
-      const price = raw && !isNaN(num) && num > 0 ? Math.round(num * 100) : null;
-      entries.push({ categoryId: cat.id, subtypeId: sub.id, price });
-    }
-  }
-  return entries;
 }

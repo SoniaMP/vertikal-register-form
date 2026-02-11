@@ -1,16 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import type { Supplement, SupplementGroup } from "@prisma/client";
+import { useState, useTransition } from "react";
+import type {
+  Supplement,
+  SupplementGroup,
+  SupplementPrice,
+} from "@prisma/client";
 import { ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/helpers/price-calculator";
+import { Input } from "@/components/ui/input";
+import { upsertSupplementPrice } from "@/app/admin/(dashboard)/tipos-federacion/actions";
 import { SupplementActions } from "./supplement-actions";
 import { SupplementFormDialog } from "./supplement-form-dialog";
 
-type SupplementWithGroup = Supplement & {
+type SupplementWithPrice = Supplement & {
   supplementGroup: SupplementGroup | null;
+  prices: SupplementPrice[];
 };
 
 type SupplementGroupWithSupplements = SupplementGroup & {
@@ -18,21 +24,21 @@ type SupplementGroupWithSupplements = SupplementGroup & {
 };
 
 type Props = {
-  federationTypeId: string;
-  supplements: SupplementWithGroup[];
+  supplements: SupplementWithPrice[];
   supplementGroups: SupplementGroupWithSupplements[];
+  seasonId: string;
 };
 
 export function SupplementsSection({
-  federationTypeId,
   supplements,
   supplementGroups,
+  seasonId,
 }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
-    <div className="border-t px-4 py-3">
+    <div className="rounded-lg border px-4 py-3">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
@@ -58,7 +64,7 @@ export function SupplementsSection({
               key={sup.id}
               supplement={sup}
               supplementGroups={supplementGroups}
-              federationTypeId={federationTypeId}
+              seasonId={seasonId}
             />
           ))}
           <Button
@@ -73,7 +79,6 @@ export function SupplementsSection({
           <SupplementFormDialog
             open={isCreateOpen}
             onOpenChange={setIsCreateOpen}
-            federationTypeId={federationTypeId}
             supplementGroups={supplementGroups}
           />
         </div>
@@ -85,24 +90,45 @@ export function SupplementsSection({
 function SupplementRow({
   supplement,
   supplementGroups,
-  federationTypeId,
+  seasonId,
 }: {
-  supplement: SupplementWithGroup;
+  supplement: SupplementWithPrice;
   supplementGroups: SupplementGroupWithSupplements[];
-  federationTypeId: string;
+  seasonId: string;
 }) {
+  const [isPending, startTransition] = useTransition();
+  const seasonPrice = supplement.prices[0]?.price;
+  const hasGroup = !!supplement.supplementGroup;
+
+  function handlePriceSave(value: string) {
+    const num = parseFloat(value);
+    if (isNaN(num) || num <= 0) return;
+    const cents = Math.round(num * 100);
+    startTransition(async () => {
+      await upsertSupplementPrice(supplement.id, seasonId, cents);
+    });
+  }
+
   return (
     <div className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
       <div className="flex items-center gap-3 min-w-0">
         <span className="font-medium truncate">{supplement.name}</span>
-        {supplement.supplementGroup ? (
+        {hasGroup && (
           <Badge variant="outline">
-            Grupo: {supplement.supplementGroup.name}
+            Grupo: {supplement.supplementGroup!.name}
           </Badge>
-        ) : (
-          <span className="text-muted-foreground">
-            {supplement.price !== null ? formatPrice(supplement.price) : "—"}
-          </span>
+        )}
+        {!hasGroup && (
+          <Input
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={seasonPrice ? (seasonPrice / 100).toFixed(2) : ""}
+            placeholder="€"
+            className="h-7 w-20 text-center text-xs"
+            disabled={isPending}
+            onBlur={(e) => handlePriceSave(e.target.value)}
+          />
         )}
         <Badge variant={supplement.active ? "default" : "secondary"}>
           {supplement.active ? "Activo" : "Inactivo"}
@@ -111,7 +137,6 @@ function SupplementRow({
       <SupplementActions
         supplement={supplement}
         supplementGroups={supplementGroups}
-        federationTypeId={federationTypeId}
       />
     </div>
   );

@@ -30,7 +30,6 @@ type SupplementGroupWithSupplements = SupplementGroup & {
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  federationTypeId: string;
   supplement?: Supplement;
   supplementGroups?: SupplementGroupWithSupplements[];
 };
@@ -41,7 +40,6 @@ const NO_GROUP = "__none__";
 export function SupplementFormDialog({
   open,
   onOpenChange,
-  federationTypeId,
   supplement,
   supplementGroups = [],
 }: Props) {
@@ -49,24 +47,24 @@ export function SupplementFormDialog({
   const [selectedGroup, setSelectedGroup] = useState(
     supplement?.supplementGroupId ?? NO_GROUP,
   );
+  const [prevOpen, setPrevOpen] = useState(open);
 
-  const hasGroup = selectedGroup !== NO_GROUP;
+  if (open && !prevOpen) {
+    setSelectedGroup(supplement?.supplementGroupId ?? NO_GROUP);
+    setPrevOpen(true);
+  } else if (!open && prevOpen) {
+    setPrevOpen(false);
+  }
 
   const action = isEditing
     ? updateSupplement.bind(null, supplement.id)
-    : createSupplement.bind(null, federationTypeId);
+    : createSupplement;
 
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
 
   useEffect(() => {
     if (state.success) onOpenChange(false);
   }, [state, onOpenChange]);
-
-  useEffect(() => {
-    if (open) {
-      setSelectedGroup(supplement?.supplementGroupId ?? NO_GROUP);
-    }
-  }, [open, supplement]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -103,7 +101,7 @@ export function SupplementFormDialog({
               <input
                 type="hidden"
                 name="supplementGroupId"
-                value={hasGroup ? selectedGroup : ""}
+                value={selectedGroup !== NO_GROUP ? selectedGroup : ""}
               />
               <Select value={selectedGroup} onValueChange={setSelectedGroup}>
                 <SelectTrigger>
@@ -118,22 +116,6 @@ export function SupplementFormDialog({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          )}
-          {!hasGroup && (
-            <div className="space-y-2">
-              <Label htmlFor="sup-price">Precio (EUR)</Label>
-              <Input
-                id="sup-price"
-                name="price"
-                type="number"
-                step="0.01"
-                min="0.01"
-                defaultValue={
-                  supplement?.price ? (supplement.price / 100).toFixed(2) : ""
-                }
-                required
-              />
             </div>
           )}
           {state.error && (

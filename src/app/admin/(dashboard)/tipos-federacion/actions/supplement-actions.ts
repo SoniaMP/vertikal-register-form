@@ -5,14 +5,14 @@ import { revalidatePath } from "next/cache";
 import {
   supplementSchema,
   supplementGroupSchema,
-} from "@/validations/federation-type";
-import { requireAuth, type ActionResult } from "./federation-type-actions";
-import { parsePrice } from "./utils";
+  supplementPriceSchema,
+  supplementGroupPriceSchema,
+} from "@/validations/license";
+import { requireAuth, type ActionResult } from "@/lib/actions";
 
 // --- Supplement actions ---
 
 export async function createSupplement(
-  federationTypeId: string,
   _prevState: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
@@ -20,12 +20,10 @@ export async function createSupplement(
   if (authError) return authError;
 
   const groupId = (formData.get("supplementGroupId") as string) || null;
-  const price = groupId ? null : parsePrice(formData);
 
   const parsed = supplementSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
-    price,
     supplementGroupId: groupId,
   });
 
@@ -34,15 +32,7 @@ export async function createSupplement(
     return { success: false, error: firstError };
   }
 
-  await prisma.supplement.create({
-    data: {
-      name: parsed.data.name,
-      description: parsed.data.description,
-      price: parsed.data.price,
-      supplementGroupId: parsed.data.supplementGroupId,
-      federationTypeId,
-    },
-  });
+  await prisma.supplement.create({ data: parsed.data });
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }
@@ -56,12 +46,10 @@ export async function updateSupplement(
   if (authError) return authError;
 
   const groupId = (formData.get("supplementGroupId") as string) || null;
-  const price = groupId ? null : parsePrice(formData);
 
   const parsed = supplementSchema.safeParse({
     name: formData.get("name"),
     description: formData.get("description"),
-    price,
     supplementGroupId: groupId,
   });
 
@@ -70,15 +58,7 @@ export async function updateSupplement(
     return { success: false, error: firstError };
   }
 
-  await prisma.supplement.update({
-    where: { id },
-    data: {
-      name: parsed.data.name,
-      description: parsed.data.description,
-      price: parsed.data.price,
-      supplementGroupId: parsed.data.supplementGroupId,
-    },
-  });
+  await prisma.supplement.update({ where: { id }, data: parsed.data });
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }
@@ -98,10 +78,36 @@ export async function toggleSupplementActive(
   return { success: true };
 }
 
+export async function upsertSupplementPrice(
+  supplementId: string,
+  seasonId: string,
+  price: number,
+): Promise<ActionResult> {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
+  const parsed = supplementPriceSchema.safeParse({
+    seasonId,
+    supplementId,
+    price,
+  });
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Datos inválidos";
+    return { success: false, error: firstError };
+  }
+
+  await prisma.supplementPrice.upsert({
+    where: { seasonId_supplementId: { seasonId, supplementId } },
+    create: { seasonId, supplementId, price },
+    update: { price },
+  });
+  revalidatePath("/admin/tipos-federacion");
+  return { success: true };
+}
+
 // --- Supplement Group actions ---
 
 export async function createSupplementGroup(
-  federationTypeId: string,
   _prevState: ActionResult,
   formData: FormData,
 ): Promise<ActionResult> {
@@ -110,7 +116,6 @@ export async function createSupplementGroup(
 
   const parsed = supplementGroupSchema.safeParse({
     name: formData.get("name"),
-    price: parsePrice(formData),
   });
 
   if (!parsed.success) {
@@ -118,9 +123,7 @@ export async function createSupplementGroup(
     return { success: false, error: firstError };
   }
 
-  await prisma.supplementGroup.create({
-    data: { ...parsed.data, federationTypeId },
-  });
+  await prisma.supplementGroup.create({ data: parsed.data });
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }
@@ -135,7 +138,6 @@ export async function updateSupplementGroup(
 
   const parsed = supplementGroupSchema.safeParse({
     name: formData.get("name"),
-    price: parsePrice(formData),
   });
 
   if (!parsed.success) {
@@ -154,11 +156,41 @@ export async function deleteSupplementGroup(
   const authError = await requireAuth();
   if (authError) return authError;
 
-  await prisma.supplement.updateMany({
-    where: { supplementGroupId: id },
-    data: { supplementGroupId: null },
+  await prisma.$transaction(async (tx) => {
+    await tx.supplement.updateMany({
+      where: { supplementGroupId: id },
+      data: { supplementGroupId: null },
+    });
+    await tx.supplementGroupPrice.deleteMany({ where: { groupId: id } });
+    await tx.supplementGroup.delete({ where: { id } });
   });
-  await prisma.supplementGroup.delete({ where: { id } });
+  revalidatePath("/admin/tipos-federacion");
+  return { success: true };
+}
+
+export async function upsertSupplementGroupPrice(
+  groupId: string,
+  seasonId: string,
+  price: number,
+): Promise<ActionResult> {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
+  const parsed = supplementGroupPriceSchema.safeParse({
+    seasonId,
+    groupId,
+    price,
+  });
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Datos inválidos";
+    return { success: false, error: firstError };
+  }
+
+  await prisma.supplementGroupPrice.upsert({
+    where: { seasonId_groupId: { seasonId, groupId } },
+    create: { seasonId, groupId, price },
+    update: { price },
+  });
   revalidatePath("/admin/tipos-federacion");
   return { success: true };
 }

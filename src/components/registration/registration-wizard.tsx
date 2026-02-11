@@ -12,14 +12,14 @@ import { RenewalBanner } from "./renewal-banner";
 import { useFormPersistence } from "@/hooks/use-form-persistence";
 import {
   personalDataSchema,
-  federationSelectionSchema,
+  licenseSelectionSchema,
   registrationSchema,
   type RegistrationInput,
 } from "@/validations/registration";
-import type { FederationType } from "@/types";
+import type { LicenseCatalogType } from "@/types";
 
 type RegistrationWizardProps = {
-  federationTypes: FederationType[];
+  licenseTypes: LicenseCatalogType[];
   membershipFee: number;
   mode?: "new" | "renewal";
   defaultValues?: Partial<RegistrationInput>;
@@ -36,14 +36,14 @@ const EMPTY_DEFAULTS: RegistrationInput = {
   city: "",
   postalCode: "",
   province: "",
-  federationTypeId: "",
-  federationSubtypeId: "",
+  typeId: "",
+  subtypeId: "",
   categoryId: "",
   supplementIds: [],
 };
 
 export function RegistrationWizard({
-  federationTypes,
+  licenseTypes,
   membershipFee,
   mode = "new",
   defaultValues,
@@ -65,8 +65,8 @@ export function RegistrationWizard({
     onRestoreStep: setCurrentStep,
     enabled: !isRenewal,
     resetOnRestore: {
-      federationTypeId: "",
-      federationSubtypeId: "",
+      typeId: "",
+      subtypeId: "",
       categoryId: "",
       supplementIds: [],
     },
@@ -78,7 +78,7 @@ export function RegistrationWizard({
       if (isValid) setCurrentStep(2);
     } else if (currentStep === 2) {
       const isValid = await form.trigger(
-        federationSelectionSchema.keyof().options,
+        licenseSelectionSchema.keyof().options,
       );
       if (isValid) setCurrentStep(3);
     }
@@ -117,7 +117,6 @@ export function RegistrationWizard({
         return;
       }
 
-      // Clear saved form data and redirect to Stripe Checkout
       clearSavedData();
       window.location.href = result.url;
     } catch {
@@ -145,7 +144,7 @@ export function RegistrationWizard({
 
         {currentStep === 2 && (
           <FederationStep
-            federationTypes={federationTypes}
+            licenseTypes={licenseTypes}
             membershipFee={membershipFee}
             onNext={handleNextStep}
             onBack={() => setCurrentStep(1)}
@@ -154,7 +153,7 @@ export function RegistrationWizard({
 
         {currentStep === 3 && (
           <RegistrationSummary
-            federationTypes={federationTypes}
+            licenseTypes={licenseTypes}
             membershipFee={membershipFee}
             onEdit={setCurrentStep}
             onSubmit={handleSubmit}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { FederationSubtype } from "@prisma/client";
+import type { LicenseSubtype } from "@prisma/client";
 import { Pencil, Power, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,11 +22,11 @@ import {
 import { SubtypeFormDialog } from "./subtype-form-dialog";
 
 type Props = {
-  subtype: FederationSubtype;
-  registrationCount: number;
+  subtype: LicenseSubtype;
+  membershipCount: number;
 };
 
-export function SubtypeActions({ subtype, registrationCount }: Props) {
+export function SubtypeActions({ subtype, membershipCount }: Props) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -42,7 +42,7 @@ export function SubtypeActions({ subtype, registrationCount }: Props) {
     });
   }
 
-  const hasRegistrations = registrationCount > 0;
+  const hasMemberships = membershipCount > 0;
 
   return (
     <div className="flex items-center gap-1">
@@ -73,10 +73,10 @@ export function SubtypeActions({ subtype, registrationCount }: Props) {
             type="button"
             variant="ghost"
             size="icon"
-            disabled={isPending || hasRegistrations}
+            disabled={isPending || hasMemberships}
             aria-label="Eliminar subtipo"
             title={
-              hasRegistrations
+              hasMemberships
                 ? "No se puede eliminar: tiene registros asociados"
                 : "Eliminar"
             }
@@ -106,7 +106,7 @@ export function SubtypeActions({ subtype, registrationCount }: Props) {
       <SubtypeFormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        federationTypeId={subtype.federationTypeId}
+        licenseTypeId={subtype.licenseTypeId}
         subtype={subtype}
       />
     </div>

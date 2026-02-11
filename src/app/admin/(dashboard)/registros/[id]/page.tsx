@@ -3,37 +3,24 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
-import { RegistrationDetail } from "@/components/admin/registration-detail";
+import { MembershipDetail } from "@/components/admin/membership-detail";
 
 type Props = { params: Promise<{ id: string }> };
 
-export default async function RegistrationDetailPage({ params }: Props) {
+export default async function MembershipDetailPage({ params }: Props) {
   const { id } = await params;
 
-  const registration = await prisma.registration.findUnique({
+  const membership = await prisma.membership.findUnique({
     where: { id },
     include: {
-      federationType: true,
-      federationSubtype: true,
+      member: true,
+      type: true,
+      subtype: true,
       supplements: { include: { supplement: true } },
     },
   });
 
-  if (!registration) notFound();
-
-  const categoryPrice = await prisma.categoryPrice.findUnique({
-    where: {
-      categoryId_subtypeId: {
-        categoryId: registration.categoryId,
-        subtypeId: registration.federationSubtypeId,
-      },
-    },
-  });
-
-  const registrationData = {
-    ...registration,
-    subtypePrice: categoryPrice?.price ?? 0,
-  };
+  if (!membership) notFound();
 
   return (
     <div className="space-y-6">
@@ -45,10 +32,10 @@ export default async function RegistrationDetailPage({ params }: Props) {
           </Link>
         </Button>
         <h1 className="text-xl font-bold sm:text-2xl">
-          {registration.firstName} {registration.lastName}
+          {membership.member.firstName} {membership.member.lastName}
         </h1>
       </div>
-      <RegistrationDetail registration={registrationData} />
+      <MembershipDetail membership={membership} />
     </div>
   );
 }

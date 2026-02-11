@@ -23,10 +23,10 @@ import { CategoryFormDialog } from "./category-form-dialog";
 
 type Props = {
   category: Category;
-  registrationCount: number;
+  membershipCount: number;
 };
 
-export function CategoryActions({ category, registrationCount }: Props) {
+export function CategoryActions({ category, membershipCount }: Props) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -42,7 +42,7 @@ export function CategoryActions({ category, registrationCount }: Props) {
     });
   }
 
-  const hasRegistrations = registrationCount > 0;
+  const hasMemberships = membershipCount > 0;
 
   return (
     <div className="flex items-center gap-1">
@@ -73,10 +73,10 @@ export function CategoryActions({ category, registrationCount }: Props) {
             type="button"
             variant="ghost"
             size="icon"
-            disabled={isPending || hasRegistrations}
+            disabled={isPending || hasMemberships}
             aria-label="Eliminar categoría"
             title={
-              hasRegistrations
+              hasMemberships
                 ? "No se puede eliminar: tiene registros asociados"
                 : "Eliminar"
             }
@@ -106,7 +106,6 @@ export function CategoryActions({ category, registrationCount }: Props) {
       <CategoryFormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        federationTypeId={category.federationTypeId}
         category={category}
       />
     </div>

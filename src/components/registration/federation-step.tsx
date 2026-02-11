@@ -8,37 +8,37 @@ import { CategorySelector } from "./category-selector";
 import { SupplementSelector } from "./supplement-selector";
 import { PriceSummary } from "./price-summary";
 import { calculateTotal } from "@/helpers/price-calculator";
-import type { FederationType } from "@/types";
+import type { LicenseCatalogType } from "@/types";
 import type { RegistrationInput } from "@/validations/registration";
 
 type FederationStepProps = {
-  federationTypes: FederationType[];
+  licenseTypes: LicenseCatalogType[];
   membershipFee: number;
   onNext: () => void;
   onBack: () => void;
 };
 
 export function FederationStep({
-  federationTypes,
+  licenseTypes,
   membershipFee,
   onNext,
   onBack,
 }: FederationStepProps) {
   const form = useFormContext<RegistrationInput>();
-  const selectedFederationId = form.watch("federationTypeId");
-  const selectedSubtypeId = form.watch("federationSubtypeId");
+  const selectedTypeId = form.watch("typeId");
+  const selectedSubtypeId = form.watch("subtypeId");
   const selectedCategoryId = form.watch("categoryId");
   const selectedSupplementIds = form.watch("supplementIds");
 
-  const selectedFederation = federationTypes.find(
-    (ft) => ft.id === selectedFederationId,
+  const selectedType = licenseTypes.find(
+    (lt) => lt.id === selectedTypeId,
   );
 
-  const selectedSubtype = selectedFederation?.subtypes.find(
+  const selectedSubtype = selectedType?.subtypes.find(
     (st) => st.id === selectedSubtypeId,
   );
 
-  const selectedCategory = selectedFederation?.categories.find(
+  const selectedCategory = selectedType?.categories.find(
     (c) => c.id === selectedCategoryId,
   );
 
@@ -47,7 +47,7 @@ export function FederationStep({
   );
 
   const selectedSupplements =
-    selectedFederation?.supplements.filter((s) =>
+    selectedType?.supplements.filter((s) =>
       selectedSupplementIds?.includes(s.id),
     ) ?? [];
 
@@ -63,15 +63,15 @@ export function FederationStep({
 
   return (
     <div className="space-y-6">
-      <FederationSelector federationTypes={federationTypes} />
+      <FederationSelector licenseTypes={licenseTypes} />
 
-      {selectedFederation && (
-        <SubtypeSelector subtypes={selectedFederation.subtypes} />
+      {selectedType && (
+        <SubtypeSelector subtypes={selectedType.subtypes} />
       )}
 
-      {selectedSubtype && selectedFederation && (
+      {selectedSubtype && selectedType && (
         <CategorySelector
-          categories={selectedFederation.categories}
+          categories={selectedType.categories}
           selectedSubtypeId={selectedSubtypeId}
         />
       )}
@@ -79,8 +79,8 @@ export function FederationStep({
       {selectedCategory && (
         <>
           <SupplementSelector
-            supplements={selectedFederation!.supplements}
-            supplementGroups={selectedFederation!.supplementGroups}
+            supplements={selectedType!.supplements}
+            supplementGroups={selectedType!.supplementGroups}
           />
           {breakdown && <PriceSummary breakdown={breakdown} />}
         </>

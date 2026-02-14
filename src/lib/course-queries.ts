@@ -88,6 +88,62 @@ export async function getCourseAvailableSpots(
   return Math.max(0, course.maxCapacity - course._count.registrations);
 }
 
+// ── Public course listing (active, future, non-deleted) ──
+
+export async function fetchPublicCourseList() {
+  const now = new Date();
+
+  return prisma.courseCatalog.findMany({
+    where: {
+      deletedAt: null,
+      isActive: true,
+      courseDate: { gte: now },
+    },
+    include: {
+      courseType: { select: { id: true, name: true } },
+      prices: {
+        where: { isActive: true },
+        select: { id: true, name: true, amountCents: true },
+        orderBy: { amountCents: "asc" },
+      },
+      _count: {
+        select: {
+          registrations: { where: { paymentStatus: "COMPLETED" } },
+        },
+      },
+    },
+    orderBy: { courseDate: "asc" },
+  });
+}
+
+// ── Single course by slug (public) ──
+
+export async function fetchCourseBySlug(slug: string) {
+  const now = new Date();
+
+  return prisma.courseCatalog.findFirst({
+    where: {
+      slug,
+      deletedAt: null,
+      isActive: true,
+      courseDate: { gte: now },
+    },
+    include: {
+      courseType: { select: { id: true, name: true } },
+      prices: {
+        where: { isActive: true },
+        select: { id: true, name: true, amountCents: true },
+        orderBy: { amountCents: "asc" },
+      },
+      _count: {
+        select: {
+          registrations: { where: { paymentStatus: "COMPLETED" } },
+        },
+      },
+    },
+  });
+}
+
 // ── Internal helpers ──
 
 function buildCourseWhere(filters: CourseFilters) {

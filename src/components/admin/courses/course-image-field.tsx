@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -27,12 +28,16 @@ export function CourseImageField({ defaultValue = "" }: Props) {
         }}
       />
       {url && !hasError && (
-        <img
-          src={url}
-          alt="Preview"
-          className="h-32 w-full rounded-md border object-cover"
-          onError={() => setHasError(true)}
-        />
+        <div className="relative h-32 w-full overflow-hidden rounded-md border">
+          <Image
+            src={url}
+            alt="Preview"
+            fill
+            className="object-cover"
+            unoptimized
+            onError={() => setHasError(true)}
+          />
+        </div>
       )}
     </div>
   );

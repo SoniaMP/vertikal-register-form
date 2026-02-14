@@ -131,13 +131,13 @@ describe("offeringPriceSchema", () => {
   });
 
   it("rejects missing seasonId", () => {
-    const { seasonId: _, ...noSeason } = validOfferingPrice;
+    const { seasonId: _seasonId, ...noSeason } = validOfferingPrice;
     const result = offeringPriceSchema.safeParse(noSeason);
     expect(result.success).toBe(false);
   });
 
   it("rejects missing typeId", () => {
-    const { typeId: _, ...noType } = validOfferingPrice;
+    const { typeId: _typeId, ...noType } = validOfferingPrice;
     const result = offeringPriceSchema.safeParse(noType);
     expect(result.success).toBe(false);
   });
@@ -229,7 +229,7 @@ describe("supplementPriceSchema", () => {
   });
 
   it("rejects missing seasonId", () => {
-    const { seasonId: _, ...noSeason } = validSupplementPrice;
+    const { seasonId: _seasonId, ...noSeason } = validSupplementPrice;
     const result = supplementPriceSchema.safeParse(noSeason);
     expect(result.success).toBe(false);
   });
@@ -252,7 +252,7 @@ describe("supplementGroupPriceSchema", () => {
   });
 
   it("rejects missing groupId", () => {
-    const { groupId: _, ...noGroup } = validSupplementGroupPrice;
+    const { groupId: _groupId, ...noGroup } = validSupplementGroupPrice;
     const result = supplementGroupPriceSchema.safeParse(noGroup);
     expect(result.success).toBe(false);
   });

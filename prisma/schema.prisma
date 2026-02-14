@@ -256,6 +256,7 @@ model CourseType {
 model CourseCatalog {
   id           String    @id @default(cuid())
   title        String
+  slug         String    @unique
   image        String?
   courseDate   DateTime
   courseTypeId String
@@ -299,6 +300,13 @@ model CourseRegistration {
   lastName              String
   email                 String
   phone                 String?
+  dni                   String?
+  dateOfBirth           String?
+  address               String?
+  city                  String?
+  postalCode            String?
+  province              String?
+  licenseFileUrl        String?
   paymentStatus         String   @default("PENDING")
   stripeSessionId       String?
   stripePaymentIntentId String?

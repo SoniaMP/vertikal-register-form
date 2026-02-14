@@ -24,6 +24,7 @@ function parsePricesJson(raw: FormDataEntryValue | null) {
 function parseCourseFormData(formData: FormData) {
   return courseCatalogSchema.safeParse({
     title: formData.get("title"),
+    slug: formData.get("slug"),
     courseDate: formData.get("courseDate") || undefined,
     courseTypeId: formData.get("courseTypeId"),
     address: formData.get("address"),

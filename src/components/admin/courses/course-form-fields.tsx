@@ -38,6 +38,18 @@ export function CourseFormFields({ course, courseTypes }: Props) {
         />
       </div>
       <div className="space-y-2">
+        <Label htmlFor="slug">Slug (URL)</Label>
+        <Input
+          id="slug"
+          name="slug"
+          placeholder="mi-curso-ejemplo"
+          defaultValue={course?.slug ?? ""}
+        />
+        <p className="text-xs text-muted-foreground">
+          Solo letras minúsculas, números y guiones. Se usa en la URL pública.
+        </p>
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="courseTypeId">Categoría</Label>
         <div className="flex gap-2">
           <Select

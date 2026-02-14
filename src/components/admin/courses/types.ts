@@ -1,6 +1,7 @@
 export type CourseRow = {
   id: string;
   title: string;
+  slug: string;
   courseDate: Date;
   address: string;
   description: string;

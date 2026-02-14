@@ -1,6 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +53,11 @@ export function CourseFormDialog({
     if (state.success) onOpenChange(false);
   }, [state, onOpenChange]);
 
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    startTransition(() => formAction(new FormData(e.currentTarget)));
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] sm:max-w-4xl overflow-y-auto">
@@ -55,7 +66,7 @@ export function CourseFormDialog({
             {isEditing ? "Editar curso" : "Nuevo curso"}
           </DialogTitle>
         </DialogHeader>
-        <form action={formAction} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input type="hidden" name="description" value={description} />
           <input
             type="hidden"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -35,6 +35,17 @@ export function CourseActionsMenu({ course, courseTypes }: Props) {
 
   return (
     <div className="flex items-center gap-1">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        asChild
+        aria-label="Ver página pública"
+      >
+        <a href={`/cursos/${course.slug}`} target="_blank" rel="noreferrer">
+          <ExternalLink className="h-4 w-4" />
+        </a>
+      </Button>
       <Button
         type="button"
         variant="ghost"

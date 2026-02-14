@@ -16,6 +16,9 @@ export function CourseRowDesktop({ course, courseTypes }: Props) {
   return (
     <TableRow>
       <TableCell className="font-medium">{course.title}</TableCell>
+      <TableCell className="text-muted-foreground text-xs font-mono">
+        {course.slug}
+      </TableCell>
       <TableCell>
         <Badge variant="outline">{course.courseType.name}</Badge>
       </TableCell>

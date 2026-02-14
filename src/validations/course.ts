@@ -9,14 +9,14 @@ export const courseTypeSchema = z.object({
 
 export type CourseTypeInput = z.infer<typeof courseTypeSchema>;
 
-const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SLUG_REGEX = /^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/;
 
 export const courseCatalogSchema = z.object({
   title: z.string().default(""),
   slug: z
     .string()
     .regex(SLUG_REGEX, {
-      message: "El slug solo puede contener letras minúsculas, números y guiones",
+      message: "El slug solo puede contener letras, números y guiones (sin espacios)",
     })
     .default(""),
   courseDate: z.coerce.date().nullable().default(null),

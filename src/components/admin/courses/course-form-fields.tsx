@@ -46,7 +46,7 @@ export function CourseFormFields({ course, courseTypes }: Props) {
           defaultValue={course?.slug ?? ""}
         />
         <p className="text-xs text-muted-foreground">
-          Solo letras minúsculas, números y guiones. Se usa en la URL pública.
+          Letras, números y guiones. Sin espacios. Se usa en la URL pública.
         </p>
       </div>
       <div className="space-y-2">

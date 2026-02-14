@@ -8,10 +8,14 @@ const mockMemberDelete = vi.fn();
 const mockUpsert = vi.fn();
 const mockCreate = vi.fn();
 const mockTransaction = vi.fn();
+const mockOfferingFindFirst = vi.fn();
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     membership: { findUnique: (...a: unknown[]) => mockFindUnique(...a) },
+    licenseOffering: {
+      findFirst: (...a: unknown[]) => mockOfferingFindFirst(...a),
+    },
     $transaction: (fn: (tx: unknown) => Promise<void>) => mockTransaction(fn),
   },
 }));
@@ -78,6 +82,7 @@ describe("deleteMembership", () => {
 describe("createMemberWithMembership", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockOfferingFindFirst.mockResolvedValue({ id: "offering-1" });
     mockUpsert.mockResolvedValue({ id: "m-1" });
     mockTransaction.mockImplementation(
       async (fn: (tx: unknown) => Promise<void>) => fn(buildTx()),

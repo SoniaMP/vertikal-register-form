@@ -1,18 +1,15 @@
-import Link from "next/link";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/helpers/price-calculator";
-import { MembershipActions } from "./membership-actions";
-import { FederatedToggle } from "./federated-toggle";
-import { cn } from "@/lib/utils";
-import { MEMBERSHIP_STATUS } from "@/types";
+import type { SortField, SortDirection } from "@/types/membership-filters";
+import { SortableHeader } from "./sortable-header";
+import { DesktopRow } from "./membership-row-desktop";
+import { MobileCard } from "./membership-row-mobile";
+import { EmptyState } from "./empty-state";
 
 export type MembershipRow = {
   id: string;
@@ -37,62 +34,15 @@ export type MembershipRow = {
   subtype: { name: string } | null;
 };
 
-type Props = { memberships: MembershipRow[] };
-
-const PAYMENT_VARIANTS: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  COMPLETED: "default",
-  PENDING: "secondary",
-  FAILED: "destructive",
-  REFUNDED: "outline",
+type Props = {
+  memberships: MembershipRow[];
+  sortBy: SortField;
+  sortDir: SortDirection;
 };
 
-const PAYMENT_LABELS: Record<string, string> = {
-  COMPLETED: "Completado",
-  PENDING: "Pendiente",
-  FAILED: "Fallido",
-  REFUNDED: "Reembolsado",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  PENDING_PAYMENT: "Pend. pago",
-  ACTIVE: "Activo",
-  EXPIRED: "Expirado",
-  CANCELLED: "Cancelado",
-};
-
-const STATUS_VARIANTS: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  PENDING_PAYMENT: "secondary",
-  ACTIVE: "default",
-  EXPIRED: "outline",
-  CANCELLED: "destructive",
-};
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
-}
-
-function licenseLabel(m: MembershipRow): string {
-  const parts = [m.type?.name, m.subtype?.name].filter(Boolean);
-  return parts.length > 0 ? parts.join(" - ") : "Sin licencia";
-}
-
-export function MembershipsTable({ memberships }: Props) {
+export function MembershipsTable({ memberships, sortBy, sortDir }: Props) {
   if (memberships.length === 0) {
-    return (
-      <p className="text-center text-muted-foreground py-8">
-        No se encontraron miembros.
-      </p>
-    );
+    return <EmptyState />;
   }
 
   return (
@@ -106,13 +56,13 @@ export function MembershipsTable({ memberships }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Email</TableHead>
+              <SortableHeader field="memberName" label="Nombre" currentSort={sortBy} currentDir={sortDir} />
+              <SortableHeader field="email" label="Email" currentSort={sortBy} currentDir={sortDir} />
               <TableHead>Licencia</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Estado</TableHead>
+              <SortableHeader field="totalAmount" label="Total" currentSort={sortBy} currentDir={sortDir} />
+              <SortableHeader field="status" label="Estado" currentSort={sortBy} currentDir={sortDir} />
               <TableHead>Federado</TableHead>
-              <TableHead>Fecha</TableHead>
+              <SortableHeader field="createdAt" label="Fecha" currentSort={sortBy} currentDir={sortDir} />
               <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -124,101 +74,5 @@ export function MembershipsTable({ memberships }: Props) {
         </Table>
       </div>
     </>
-  );
-}
-
-function buildActionData(m: MembershipRow) {
-  return { ...m.member, id: m.id, status: m.status, paymentStatus: m.paymentStatus };
-}
-
-function DesktopRow({ membership: m }: { membership: MembershipRow }) {
-  const isCancelled = m.status === MEMBERSHIP_STATUS.CANCELLED;
-  return (
-    <TableRow className={cn(isCancelled && "opacity-50")}>
-      <TableCell>
-        <Link
-          href={`/admin/registros/${m.id}`}
-          className="font-medium hover:underline"
-        >
-          {m.member.firstName} {m.member.lastName}
-        </Link>
-      </TableCell>
-      <TableCell className="text-muted-foreground">{m.member.email}</TableCell>
-      <TableCell>{licenseLabel(m)}</TableCell>
-      <TableCell>{formatPrice(m.totalAmount)}</TableCell>
-      <TableCell>
-        <StatusBadges paymentStatus={m.paymentStatus} membershipStatus={m.status} />
-      </TableCell>
-      <TableCell>
-        <FederatedToggle membershipId={m.id} isFederated={m.isFederated} />
-      </TableCell>
-      <TableCell className="text-muted-foreground">
-        {formatDate(m.createdAt)}
-      </TableCell>
-      <TableCell className="text-right">
-        <div className="flex items-center justify-end">
-          <MembershipActions membership={buildActionData(m)} />
-        </div>
-      </TableCell>
-    </TableRow>
-  );
-}
-
-function MobileCard({ membership: m }: { membership: MembershipRow }) {
-  const isCancelled = m.status === MEMBERSHIP_STATUS.CANCELLED;
-  return (
-    <div
-      className={cn(
-        "rounded-lg border p-4 transition-colors",
-        isCancelled && "opacity-50",
-      )}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <Link
-          href={`/admin/registros/${m.id}`}
-          className="min-w-0 hover:underline"
-        >
-          <p className="font-medium truncate">
-            {m.member.firstName} {m.member.lastName}
-          </p>
-          <p className="text-sm text-muted-foreground truncate">
-            {m.member.email}
-          </p>
-        </Link>
-        <div className="flex items-center gap-1.5">
-          <StatusBadges paymentStatus={m.paymentStatus} membershipStatus={m.status} />
-          <FederatedToggle membershipId={m.id} isFederated={m.isFederated} />
-        </div>
-      </div>
-      <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-        <span>{licenseLabel(m)}</span>
-        <span>{formatPrice(m.totalAmount)}</span>
-        <span className="ml-auto">{formatDate(m.createdAt)}</span>
-      </div>
-      <div className="mt-2 flex justify-end border-t pt-2">
-        <MembershipActions membership={buildActionData(m)} />
-      </div>
-    </div>
-  );
-}
-
-function StatusBadges({
-  paymentStatus,
-  membershipStatus,
-}: {
-  paymentStatus: string;
-  membershipStatus: string;
-}) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <Badge variant={PAYMENT_VARIANTS[paymentStatus] ?? "outline"}>
-        {PAYMENT_LABELS[paymentStatus] ?? paymentStatus}
-      </Badge>
-      {membershipStatus !== MEMBERSHIP_STATUS.ACTIVE && (
-        <Badge variant={STATUS_VARIANTS[membershipStatus] ?? "outline"}>
-          {STATUS_LABELS[membershipStatus] ?? membershipStatus}
-        </Badge>
-      )}
-    </div>
   );
 }

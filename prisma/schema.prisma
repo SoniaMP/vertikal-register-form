@@ -147,6 +147,7 @@ model Member {
 
   memberships Membership[]
 
+  @@index([dni])
   @@index([email])
   @@index([lastName, firstName])
 }

@@ -43,6 +43,9 @@ next-env.d.ts
 *.db
 *.db-journal
 
+# uploaded files
+data/uploads/
+
 # backups
 backups/
 

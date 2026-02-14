@@ -4,13 +4,13 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateMemberDialog } from "./create-member-dialog";
-import type { LicenseTypeOption } from "./federation-cascading-selects";
+import type { LicenseCatalogType } from "@/types";
 
 type Props = {
-  licenseTypes: LicenseTypeOption[];
+  licenseCatalog: LicenseCatalogType[];
 };
 
-export function CreateMemberButton({ licenseTypes }: Props) {
+export function CreateMemberButton({ licenseCatalog }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [generation, setGeneration] = useState(0);
 
@@ -29,7 +29,7 @@ export function CreateMemberButton({ licenseTypes }: Props) {
         key={generation}
         open={isOpen}
         onOpenChange={handleOpenChange}
-        licenseTypes={licenseTypes}
+        catalog={licenseCatalog}
       />
     </>
   );

@@ -3,13 +3,13 @@ import { MembershipFilters } from "@/components/admin/membership-filters";
 import { MembershipsTable } from "@/components/admin/memberships-table";
 import { Pagination } from "@/components/admin/pagination";
 import { CreateMemberButton } from "@/components/admin/create-member-button";
+import { fetchLicenseCatalog } from "@/lib/license-catalog";
 
 const PAGE_SIZE = 10;
 
 type SearchParams = Promise<{
   search?: string;
   type?: string;
-  status?: string;
   membershipStatus?: string;
   page?: string;
   firstName?: string;
@@ -45,17 +45,17 @@ export default async function AdminRegistrationsPage({
 }) {
   const params = await searchParams;
   const page = Math.max(1, Number(params.page) || 1);
-  const { memberships, total, licenseTypes, licenseTypesWithRelations } =
-    await fetchData(params, page);
+  const [{ memberships, total, licenseTypes }, catalog] = await Promise.all([
+    fetchData(params, page),
+    fetchLicenseCatalog(),
+  ]);
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Miembros</h1>
-        <CreateMemberButton
-          licenseTypes={licenseTypesWithRelations}
-        />
+        <CreateMemberButton licenseCatalog={catalog} />
       </div>
       <MembershipFilters licenseTypes={licenseTypes} />
       <MembershipsTable memberships={memberships} />
@@ -67,38 +67,26 @@ export default async function AdminRegistrationsPage({
 async function fetchData(params: Awaited<SearchParams>, page: number) {
   const where = buildWhere(params);
 
-  const [memberships, total, licenseTypes, licenseTypesWithRelations] =
-    await Promise.all([
-      prisma.membership.findMany({
-        where,
-        include: {
-          member: true,
-          type: true,
-          subtype: true,
-        },
-        orderBy: { createdAt: "desc" },
-        skip: (page - 1) * PAGE_SIZE,
-        take: PAGE_SIZE,
-      }),
-      prisma.membership.count({ where }),
-      prisma.licenseType.findMany({
-        where: { active: true },
-        select: { id: true, name: true },
-      }),
-      prisma.licenseType.findMany({
-        where: { active: true },
-        select: {
-          id: true,
-          name: true,
-          subtypes: {
-            where: { active: true },
-            select: { id: true, name: true },
-          },
-        },
-      }),
-    ]);
+  const [memberships, total, licenseTypes] = await Promise.all([
+    prisma.membership.findMany({
+      where,
+      include: {
+        member: true,
+        type: true,
+        subtype: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    prisma.membership.count({ where }),
+    prisma.licenseType.findMany({
+      where: { active: true },
+      select: { id: true, name: true },
+    }),
+  ]);
 
-  return { memberships, total, licenseTypes, licenseTypesWithRelations };
+  return { memberships, total, licenseTypes };
 }
 
 function buildWhere(params: Awaited<SearchParams>) {
@@ -126,10 +114,6 @@ function buildWhere(params: Awaited<SearchParams>) {
 
   if (params.type) {
     conditions.push({ typeId: params.type });
-  }
-
-  if (params.status) {
-    conditions.push({ paymentStatus: params.status });
   }
 
   if (params.federated === "true" || params.federated === "false") {

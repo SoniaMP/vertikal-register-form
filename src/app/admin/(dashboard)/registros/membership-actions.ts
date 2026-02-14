@@ -106,6 +106,13 @@ const createMemberSchema = personalDataSchema.extend({
   typeId: requiredSelect("Selecciona un tipo de licencia"),
   subtypeId: requiredSelect("Selecciona un subtipo"),
   categoryId: requiredSelect("Selecciona una categoría"),
+  totalAmount: z.preprocess(
+    (v) => {
+      const euros = typeof v === "string" && v !== "" ? Number(v) : 0;
+      return Math.round(euros * 100);
+    },
+    z.number().int().min(0, "El precio no puede ser negativo"),
+  ),
 });
 
 export async function createMemberWithMembership(
@@ -129,6 +136,7 @@ export async function createMemberWithMembership(
     typeId: formData.get("typeId"),
     subtypeId: formData.get("subtypeId"),
     categoryId: formData.get("categoryId"),
+    totalAmount: formData.get("totalAmount"),
   });
 
   if (!parsed.success) {
@@ -136,8 +144,14 @@ export async function createMemberWithMembership(
     return { success: false, error: firstError };
   }
 
-  const { typeId, subtypeId, categoryId, ...personalData } = parsed.data;
+  const { typeId, subtypeId, categoryId, totalAmount, ...personalData } =
+    parsed.data;
   const season = await getActiveSeason();
+
+  const offering = await prisma.licenseOffering.findFirst({
+    where: { seasonId: season.id, typeId, subtypeId, categoryId },
+    select: { id: true },
+  });
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -153,7 +167,8 @@ export async function createMemberWithMembership(
           typeId,
           subtypeId,
           categoryId,
-          totalAmount: 0,
+          offeringId: offering?.id ?? null,
+          totalAmount,
           paymentStatus: "PENDING",
           status: "PENDING_PAYMENT",
         },
@@ -187,8 +202,13 @@ export async function searchByDni(dni: string): Promise<DniSearchResult> {
   const authError = await requireAuth();
   if (authError) return null;
 
-  const member = await prisma.member.findUnique({
-    where: { dni },
+  const member = await prisma.member.findFirst({
+    where: {
+      OR: [
+        { dni: dni.toUpperCase() },
+        { dni: dni.toLowerCase() },
+      ],
+    },
     include: {
       memberships: {
         orderBy: { createdAt: "desc" },

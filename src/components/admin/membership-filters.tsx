@@ -13,14 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { AdvancedFiltersSheet } from "./advanced-filters-sheet";
 
-const PAYMENT_STATUS_OPTIONS = [
-  { value: "all", label: "Todos los estados" },
-  { value: "PENDING", label: "Pendiente" },
-  { value: "COMPLETED", label: "Completado" },
-  { value: "FAILED", label: "Fallido" },
-  { value: "REFUNDED", label: "Reembolsado" },
-];
-
 type LicenseTypeOption = { id: string; name: string };
 
 type Props = {
@@ -71,21 +63,6 @@ export function MembershipFilters({ licenseTypes }: Props) {
           {licenseTypes.map((lt) => (
             <SelectItem key={lt.id} value={lt.id}>
               {lt.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Select
-        defaultValue={searchParams.get("status") ?? "all"}
-        onValueChange={(v) => updateParam("status", v)}
-      >
-        <SelectTrigger className="sm:w-44">
-          <SelectValue placeholder="Estado de pago" />
-        </SelectTrigger>
-        <SelectContent>
-          {PAYMENT_STATUS_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
             </SelectItem>
           ))}
         </SelectContent>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useState, useTransition } from "react";
 import { Search } from "lucide-react";
 import {
   Dialog,
@@ -11,51 +11,61 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MemberFormFields } from "./member-form-fields";
-import {
-  FederationCascadingSelects,
-  type LicenseTypeOption,
-} from "./federation-cascading-selects";
+import { FederationCascadingSelects } from "./federation-cascading-selects";
 import {
   createMemberWithMembership,
   searchByDni,
   type DniSearchResult,
 } from "@/app/admin/(dashboard)/registros/membership-actions";
+import type { LicenseCatalogType } from "@/types";
+import type { ActionResult } from "@/lib/actions";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  licenseTypes: LicenseTypeOption[];
+  catalog: LicenseCatalogType[];
 };
-
-const INITIAL_STATE = { success: false, error: undefined };
 
 export function CreateMemberDialog({
   open,
   onOpenChange,
-  licenseTypes,
+  catalog,
 }: Props) {
-  const [state, formAction, isPending] = useActionState(
-    createMemberWithMembership,
-    INITIAL_STATE,
-  );
+  const [error, setError] = useState<string>();
+  const [isPending, startTransition] = useTransition();
   const [dniQuery, setDniQuery] = useState("");
   const [prefill, setPrefill] = useState<NonNullable<DniSearchResult>>();
   const [isSearching, setIsSearching] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
-  useEffect(() => {
-    if (state.success) onOpenChange(false);
-  }, [state, onOpenChange]);
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    startTransition(async () => {
+      const result: ActionResult = await createMemberWithMembership(
+        { success: false },
+        formData,
+      );
+      if (result.success) {
+        onOpenChange(false);
+      } else {
+        setError(result.error);
+      }
+    });
+  }
 
   async function handleDniSearch() {
     if (!dniQuery.trim()) return;
     setIsSearching(true);
-    const result = await searchByDni(dniQuery.trim());
-    if (result) {
-      setPrefill(result);
-      setFormKey((k) => k + 1);
+    try {
+      const result = await searchByDni(dniQuery.trim());
+      if (result) {
+        setPrefill(result);
+        setFormKey((k) => k + 1);
+      }
+    } finally {
+      setIsSearching(false);
     }
-    setIsSearching(false);
   }
 
   return (
@@ -70,7 +80,12 @@ export function CreateMemberDialog({
             placeholder="Buscar por DNI..."
             value={dniQuery}
             onChange={(e) => setDniQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleDniSearch()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleDniSearch();
+              }
+            }}
           />
           <Button
             type="button"
@@ -83,18 +98,18 @@ export function CreateMemberDialog({
           </Button>
         </div>
 
-        <form action={formAction} className="space-y-4" key={formKey}>
+        <form onSubmit={handleSubmit} className="space-y-4" key={formKey}>
           <MemberFormFields defaults={prefill} />
 
           <FederationCascadingSelects
-            licenseTypes={licenseTypes}
+            catalog={catalog}
             defaultTypeId={prefill?.typeId}
             defaultSubtypeId={prefill?.subtypeId}
             defaultCategoryId={prefill?.categoryId}
           />
 
-          {state.error && (
-            <p className="text-sm text-destructive">{state.error}</p>
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
           )}
           <div className="flex justify-end gap-2">
             <Button

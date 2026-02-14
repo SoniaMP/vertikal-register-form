@@ -241,3 +241,75 @@ model AppSetting {
   key   String @id
   value String
 }
+
+// ──────────────────────────────────────────────
+// Courses: types, catalog, pricing, registrations
+// ──────────────────────────────────────────────
+model CourseType {
+  id     String  @id @default(cuid())
+  name   String
+  active Boolean @default(true)
+
+  courses CourseCatalog[]
+}
+
+model CourseCatalog {
+  id           String    @id @default(cuid())
+  title        String
+  image        String?
+  courseDate   DateTime
+  courseTypeId String
+  address      String
+  lat          Float?
+  lng          Float?
+  placeId      String?
+  description  String
+  isActive     Boolean   @default(true)
+  maxCapacity  Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  courseType     CourseType          @relation(fields: [courseTypeId], references: [id])
+  prices        CoursePrice[]
+  registrations CourseRegistration[]
+
+  @@index([courseDate])
+  @@index([isActive, courseDate])
+}
+
+model CoursePrice {
+  id              String    @id @default(cuid())
+  courseCatalogId String
+  name            String
+  amountCents     Int
+  isActive        Boolean   @default(true)
+  saleStart       DateTime?
+  saleEnd         DateTime?
+
+  courseCatalog CourseCatalog        @relation(fields: [courseCatalogId], references: [id], onDelete: Cascade)
+  registrations CourseRegistration[]
+}
+
+model CourseRegistration {
+  id                    String   @id @default(cuid())
+  courseCatalogId       String
+  coursePriceId         String
+  firstName             String
+  lastName              String
+  email                 String
+  phone                 String?
+  paymentStatus         String   @default("PENDING")
+  stripeSessionId       String?
+  stripePaymentIntentId String?
+  confirmationSent      Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  courseCatalog CourseCatalog @relation(fields: [courseCatalogId], references: [id])
+  coursePrice   CoursePrice   @relation(fields: [coursePriceId], references: [id])
+
+  @@index([courseCatalogId, paymentStatus])
+  @@index([stripeSessionId])
+  @@map("courses")
+}

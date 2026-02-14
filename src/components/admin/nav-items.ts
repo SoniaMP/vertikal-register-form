@@ -1,4 +1,4 @@
-import { ClipboardList, Settings, Shield } from "lucide-react";
+import { CalendarDays, ClipboardList, Settings, Shield } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export type NavItem = {
@@ -10,5 +10,6 @@ export type NavItem = {
 export const ADMIN_NAV_ITEMS: NavItem[] = [
   { href: "/admin", label: "Miembros", icon: ClipboardList },
   { href: "/admin/tipos-federacion", label: "Federativas", icon: Shield },
+  { href: "/admin/cursos", label: "Cursos", icon: CalendarDays },
   { href: "/admin/ajustes", label: "Ajustes", icon: Settings },
 ];

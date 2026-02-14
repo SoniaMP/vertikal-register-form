@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { personalDataSchema } from "./registration";
 
 export const courseTypeSchema = z.object({
   name: z
@@ -8,8 +9,16 @@ export const courseTypeSchema = z.object({
 
 export type CourseTypeInput = z.infer<typeof courseTypeSchema>;
 
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export const courseCatalogSchema = z.object({
   title: z.string().default(""),
+  slug: z
+    .string()
+    .regex(SLUG_REGEX, {
+      message: "El slug solo puede contener letras minúsculas, números y guiones",
+    })
+    .default(""),
   courseDate: z.coerce.date().nullable().default(null),
   courseTypeId: z.string().default(""),
   address: z.string().default(""),
@@ -53,23 +62,16 @@ export const coursePriceSchema = z.object({
 
 export type CoursePriceInput = z.infer<typeof coursePriceSchema>;
 
-export const courseRegistrationCheckoutSchema = z.object({
+export const courseRegistrationCheckoutSchema = personalDataSchema.extend({
   courseCatalogId: z
     .string()
     .min(1, { message: "El curso es obligatorio" }),
   coursePriceId: z
     .string()
     .min(1, { message: "El precio es obligatorio" }),
-  firstName: z
+  licenseFileUrl: z
     .string()
-    .min(2, { message: "El nombre debe tener al menos 2 caracteres" }),
-  lastName: z
-    .string()
-    .min(2, { message: "El apellido debe tener al menos 2 caracteres" }),
-  email: z
-    .string()
-    .email({ message: "El email no es válido" }),
-  phone: z.string().nullable().optional(),
+    .min(1, { message: "La licencia es obligatoria" }),
 });
 
 export type CourseRegistrationCheckoutInput = z.infer<

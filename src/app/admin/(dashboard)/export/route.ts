@@ -3,9 +3,9 @@ import { getActiveSeason } from "@/lib/settings";
 import { parseFilterParams } from "@/lib/filter-params";
 import { buildMembershipWhere } from "@/lib/admin-queries";
 import { prisma } from "@/lib/prisma";
+import { buildCsv } from "@/lib/csv-utils";
 
 const MAX_ROWS = 5000;
-const BOM = "\uFEFF";
 
 export async function GET(request: NextRequest) {
   const activeSeason = await getActiveSeason();
@@ -61,9 +61,7 @@ export async function GET(request: NextRequest) {
     m.createdAt.toISOString().slice(0, 10),
   ]);
 
-  const csv =
-    BOM +
-    [header, ...rows].map((row) => row.map(escapeCsv).join(";")).join("\n");
+  const csv = buildCsv(header, rows);
 
   return new NextResponse(csv, {
     headers: {
@@ -71,11 +69,4 @@ export async function GET(request: NextRequest) {
       "Content-Disposition": 'attachment; filename="miembros.csv"',
     },
   });
-}
-
-function escapeCsv(value: string): string {
-  if (value.includes(";") || value.includes('"') || value.includes("\n")) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
-  return value;
 }

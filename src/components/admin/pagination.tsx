@@ -9,9 +9,18 @@ type Props = {
   totalPages: number;
   total: number;
   pageSize: number;
+  basePath?: string;
+  itemLabel?: string;
 };
 
-export function Pagination({ currentPage, totalPages, total, pageSize }: Props) {
+export function Pagination({
+  currentPage,
+  totalPages,
+  total,
+  pageSize,
+  basePath = "/admin",
+  itemLabel = "miembros",
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -27,13 +36,13 @@ export function Pagination({ currentPage, totalPages, total, pageSize }: Props) 
     } else {
       params.set("page", String(page));
     }
-    router.push(`/admin?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   }
 
   return (
     <nav aria-label="Paginación" className="flex items-center justify-between mt-4">
       <span className="text-sm text-muted-foreground">
-        Mostrando {from}-{to} de {total} miembros
+        Mostrando {from}-{to} de {total} {itemLabel}
       </span>
       {totalPages > 1 && (
         <div className="flex items-center gap-2">

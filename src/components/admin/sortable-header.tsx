@@ -3,13 +3,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { TableHead } from "@/components/ui/table";
 import { ArrowUp, ArrowDown, ArrowUpDown } from "lucide-react";
-import type { SortField, SortDirection } from "@/types/membership-filters";
 
 type Props = {
-  field: SortField;
+  field: string;
   label: string;
-  currentSort: SortField;
-  currentDir: SortDirection;
+  currentSort: string;
+  currentDir: "asc" | "desc";
+  basePath?: string;
   className?: string;
 };
 
@@ -18,6 +18,7 @@ export function SortableHeader({
   label,
   currentSort,
   currentDir,
+  basePath = "/admin",
   className,
 }: Props) {
   const router = useRouter();
@@ -34,7 +35,7 @@ export function SortableHeader({
       params.set("sortDir", "asc");
     }
     params.delete("page");
-    router.push(`/admin?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   }
 
   const Icon = isActive

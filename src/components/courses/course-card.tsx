@@ -1,6 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, MapPin, Users } from "lucide-react";
+import { CalendarDays, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatPrice } from "@/helpers/price-calculator";
@@ -25,27 +24,15 @@ export function CourseCard({ course }: { course: PublicCourse }) {
   return (
     <Link href={`/cursos/${course.slug}`} className="block">
       <Card className="h-full gap-0 overflow-hidden py-0 transition-shadow hover:shadow-md">
-        {course.image && (
-          <div className="relative h-40 w-full">
-            <Image
-              src={course.image}
-              alt={course.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 100vw, 50vw"
-            />
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <Badge variant="secondary" className="w-fit">
+              {course.courseType.name}
+            </Badge>
             {isFull && (
-              <Badge variant="destructive" className="absolute right-2 top-2">
-                Agotado
-              </Badge>
+              <Badge variant="destructive">Agotado</Badge>
             )}
           </div>
-        )}
-
-        <CardHeader className="pb-2">
-          <Badge variant="secondary" className="w-fit">
-            {course.courseType.name}
-          </Badge>
           <CardTitle className="line-clamp-2 text-lg">
             {course.title}
           </CardTitle>
@@ -55,10 +42,6 @@ export function CourseCard({ course }: { course: PublicCourse }) {
           <div className="flex items-center gap-1.5">
             <CalendarDays className="size-4 shrink-0" />
             <span>{formatCourseDate(course.courseDate)}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <MapPin className="size-4 shrink-0" />
-            <span className="line-clamp-1">{course.address}</span>
           </div>
 
           <div className="mt-2 flex items-center justify-between border-t pt-3">

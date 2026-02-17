@@ -22,20 +22,12 @@ function parsePricesJson(raw: FormDataEntryValue | null) {
 }
 
 function parseCourseFormData(formData: FormData) {
-  console.log("Parsing form data:", Object.fromEntries(formData.entries()));
-  console.log("maxCapacity raw value:", formData.get("maxCapacity"));
   return courseCatalogSchema.safeParse({
     title: formData.get("title"),
     slug: formData.get("slug"),
     courseDate: formData.get("courseDate") || undefined,
     courseTypeId: formData.get("courseTypeId"),
-    address: formData.get("address"),
-    lat: toNumberOrNull(formData.get("lat")),
-    lng: toNumberOrNull(formData.get("lng")),
-    placeId: formData.get("placeId") || null,
-    description: formData.get("description"),
     maxCapacity: toNumberOrNull(formData.get("maxCapacity")),
-    image: formData.get("image") || null,
   });
 }
 

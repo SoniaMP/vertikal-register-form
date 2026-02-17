@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { CalendarDays, MapPin, Users } from "lucide-react";
+import { CalendarDays, Users } from "lucide-react";
 import { fetchCourseBySlug } from "@/lib/course-queries";
 import { CourseRegistrationForm } from "@/components/courses/course-registration-form";
 
@@ -37,23 +37,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
             {formatCourseDate(course.courseDate)}
           </span>
           <span className="flex items-center gap-1.5">
-            <MapPin className="size-4" />
-            {course.address}
-          </span>
-          <span className="flex items-center gap-1.5">
             <Users className="size-4" />
             {isFull
               ? "Sin plazas"
               : `${spotsLeft} plaza${spotsLeft !== 1 ? "s" : ""} disponible${spotsLeft !== 1 ? "s" : ""}`}
           </span>
         </div>
-
-        {course.description && (
-          <div
-            className="prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: course.description }}
-          />
-        )}
       </section>
 
       <section>

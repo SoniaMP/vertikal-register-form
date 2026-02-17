@@ -257,14 +257,8 @@ model CourseCatalog {
   id           String    @id @default(cuid())
   title        String
   slug         String    @unique
-  image        String?
   courseDate   DateTime
   courseTypeId String
-  address      String
-  lat          Float?
-  lng          Float?
-  placeId      String?
-  description  String
   isActive     Boolean   @default(true)
   maxCapacity  Int
   createdAt    DateTime  @default(now())

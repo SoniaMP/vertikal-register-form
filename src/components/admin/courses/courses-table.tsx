@@ -44,7 +44,6 @@ export function CoursesTable({ courses, courseTypes }: Props) {
               <TableHead>Slug</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead>Fecha</TableHead>
-              <TableHead>Dirección</TableHead>
               <TableHead>Plazas</TableHead>
               <TableHead>Activo</TableHead>
               <TableHead className="text-right">Acciones</TableHead>

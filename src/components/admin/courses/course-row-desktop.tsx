@@ -25,7 +25,6 @@ export function CourseRowDesktop({ course, courseTypes }: Props) {
       <TableCell className="text-muted-foreground">
         {formatCourseDate(course.courseDate)}
       </TableCell>
-      <TableCell className="text-muted-foreground">{course.address}</TableCell>
       <TableCell className="tabular-nums">
         {course._count.registrations} / {course.maxCapacity}
         {spots <= 0 && (

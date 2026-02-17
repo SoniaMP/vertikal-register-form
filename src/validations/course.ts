@@ -21,18 +21,12 @@ export const courseCatalogSchema = z.object({
     .default(""),
   courseDate: z.coerce.date().nullable().default(null),
   courseTypeId: z.string().default(""),
-  address: z.string().default(""),
-  lat: z.number().nullable().optional(),
-  lng: z.number().nullable().optional(),
-  placeId: z.string().nullable().optional(),
-  description: z.string().default(""),
   maxCapacity: z
     .number()
     .int({ message: "La capacidad debe ser un número entero" })
     .positive({ message: "La capacidad debe ser mayor que 0" })
     .nullable()
     .default(null),
-  image: z.string().nullable().optional(),
 });
 
 export type CourseCatalogInput = z.infer<typeof courseCatalogSchema>;

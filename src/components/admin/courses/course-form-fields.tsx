@@ -94,14 +94,6 @@ export function CourseFormFields({ course, courseTypes }: Props) {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="address">Dirección</Label>
-        <Input
-          id="address"
-          name="address"
-          defaultValue={course?.address ?? ""}
-        />
-      </div>
-      <div className="space-y-2">
         <Label htmlFor="maxCapacity">Capacidad máxima</Label>
         <Input
           id="maxCapacity"

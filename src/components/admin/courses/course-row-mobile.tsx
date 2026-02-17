@@ -18,7 +18,7 @@ export function CourseRowMobile({ course, courseTypes }: Props) {
         <div className="min-w-0">
           <p className="font-medium truncate">{course.title}</p>
           <p className="text-sm text-muted-foreground truncate">
-            {formatCourseDate(course.courseDate)} &middot; {course.address}
+            {formatCourseDate(course.courseDate)}
           </p>
         </div>
         <CourseActiveToggle

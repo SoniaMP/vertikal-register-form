@@ -6,7 +6,6 @@ import {
   useActionState,
   useEffect,
   useState,
-  type FormEvent,
 } from "react";
 import {
   Dialog,
@@ -20,8 +19,6 @@ import {
   updateCourse,
 } from "@/app/admin/(dashboard)/cursos/actions";
 import { CourseFormFields } from "./course-form-fields";
-import { CourseImageField } from "./course-image-field";
-import { CourseDescriptionField } from "./course-description-field";
 import { CoursePriceList, type PriceRow } from "./course-price-list";
 import type { CourseRow, CourseTypeOption } from "./types";
 
@@ -45,7 +42,6 @@ export function CourseFormDialog({
   const action = isEditing ? updateCourse.bind(null, course.id) : createCourse;
 
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
-  const [description, setDescription] = useState(course?.description ?? "");
   const [prices, setPrices] = useState<PriceRow[]>(course?.prices ?? []);
 
   useEffect(() => {
@@ -54,8 +50,6 @@ export function CourseFormDialog({
 
   function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
-    const newData = new FormData(e.currentTarget);
-    console.log("Form data:", Object.fromEntries(newData.entries()));
     startTransition(() => formAction(new FormData(e.currentTarget)));
   }
 
@@ -68,18 +62,12 @@ export function CourseFormDialog({
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="hidden" name="description" value={description} />
           <input
             type="hidden"
             name="pricesJson"
             value={JSON.stringify(prices)}
           />
           <CourseFormFields course={course} courseTypes={courseTypes} />
-          <CourseImageField defaultValue={course?.image ?? ""} />
-          <CourseDescriptionField
-            defaultValue={course?.description}
-            onChange={setDescription}
-          />
           <CoursePriceList
             defaultPrices={course?.prices}
             onChange={setPrices}

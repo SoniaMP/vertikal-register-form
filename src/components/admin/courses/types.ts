@@ -3,9 +3,6 @@ export type CourseRow = {
   title: string;
   slug: string;
   courseDate: Date;
-  address: string;
-  description: string;
-  image: string | null;
   isActive: boolean;
   maxCapacity: number;
   courseType: { id: string; name: string };

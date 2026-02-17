@@ -27,15 +27,14 @@ COPY . .
 # Variables de entorno para el build
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_APP_NAME
-ARG DATABASE_URL
 
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
-ENV DATABASE_URL=${DATABASE_URL}
 
-# Generamos el cliente de Prisma y aplicamos migraciones
+# Generamos el cliente de Prisma y creamos DB temporal para el build
 RUN npx prisma generate
-RUN npx prisma migrate deploy
+RUN DATABASE_URL=file:/tmp/build.db npx prisma migrate deploy
+ENV DATABASE_URL=file:/tmp/build.db
 
 # Construimos la aplicación Next.js
 RUN npm run build

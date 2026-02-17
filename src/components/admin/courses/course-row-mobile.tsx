@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { CourseActiveToggle } from "./course-active-toggle";
 import { CourseActionsMenu } from "./course-actions-menu";
@@ -16,7 +17,12 @@ export function CourseRowMobile({ course, courseTypes }: Props) {
     <div className="rounded-lg border p-4 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-medium truncate">{course.title}</p>
+          <Link
+            href={`/admin/cursos/${course.id}`}
+            className="font-medium truncate hover:underline"
+          >
+            {course.title}
+          </Link>
           <p className="text-sm text-muted-foreground truncate">
             {formatCourseDate(course.courseDate)}
           </p>

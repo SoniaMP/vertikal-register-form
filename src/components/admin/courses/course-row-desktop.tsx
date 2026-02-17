@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { CourseActiveToggle } from "./course-active-toggle";
@@ -15,7 +16,14 @@ export function CourseRowDesktop({ course, courseTypes }: Props) {
 
   return (
     <TableRow>
-      <TableCell className="font-medium">{course.title}</TableCell>
+      <TableCell className="font-medium">
+        <Link
+          href={`/admin/cursos/${course.id}`}
+          className="hover:underline"
+        >
+          {course.title}
+        </Link>
+      </TableCell>
       <TableCell className="text-muted-foreground text-xs font-mono">
         {course.slug}
       </TableCell>

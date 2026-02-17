@@ -1,24 +1,26 @@
 import Link from "next/link";
 import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { confirmMembershipCheckout } from "@/lib/stripe-confirm";
+import { confirmCourseCheckout } from "@/lib/stripe-confirm";
 
 export const metadata = {
-  title: "Registro completado - Club Vertikal",
-  description: "Tu registro se ha completado correctamente",
+  title: "Inscripción completada - Club Vertikal",
+  description: "Tu inscripción al curso se ha completado correctamente",
 };
 
 type ExitoPageProps = {
   searchParams: Promise<{ session_id?: string }>;
 };
 
-export default async function ExitoPage({ searchParams }: ExitoPageProps) {
+export default async function CursoExitoPage({
+  searchParams,
+}: ExitoPageProps) {
   const { session_id: sessionId } = await searchParams;
 
   let isConfirmed = false;
   if (sessionId) {
     try {
-      isConfirmed = await confirmMembershipCheckout(sessionId);
+      isConfirmed = await confirmCourseCheckout(sessionId);
     } catch {
       /* Stripe call failed; show fallback message */
     }
@@ -33,7 +35,7 @@ export default async function ExitoPage({ searchParams }: ExitoPageProps) {
           Si realizaste el pago, recibirás la confirmación en breve por email.
         </p>
         <Button asChild className="mt-8">
-          <Link href="/">Volver al inicio</Link>
+          <Link href="/cursos">Volver a cursos</Link>
         </Button>
       </div>
     );
@@ -42,7 +44,7 @@ export default async function ExitoPage({ searchParams }: ExitoPageProps) {
   return (
     <div className="flex flex-col items-center py-10 text-center">
       <CheckCircle2 className="mb-6 size-16 text-green-600" />
-      <h2 className="text-2xl font-bold">Registro completado</h2>
+      <h2 className="text-2xl font-bold">Inscripción completada</h2>
       <p className="mt-4 text-muted-foreground">
         Tu pago se ha procesado correctamente. Recibirás un email de
         confirmación en breve.
@@ -53,7 +55,7 @@ export default async function ExitoPage({ searchParams }: ExitoPageProps) {
         </p>
       )}
       <Button asChild className="mt-8">
-        <Link href="/">Volver al inicio</Link>
+        <Link href="/cursos">Volver a cursos</Link>
       </Button>
     </div>
   );

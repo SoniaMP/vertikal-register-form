@@ -22,6 +22,8 @@ function parsePricesJson(raw: FormDataEntryValue | null) {
 }
 
 function parseCourseFormData(formData: FormData) {
+  console.log("Parsing form data:", Object.fromEntries(formData.entries()));
+  console.log("maxCapacity raw value:", formData.get("maxCapacity"));
   return courseCatalogSchema.safeParse({
     title: formData.get("title"),
     slug: formData.get("slug"),
@@ -120,9 +122,7 @@ export async function toggleCourseActive(
   return { success: true };
 }
 
-export async function softDeleteCourse(
-  id: string,
-): Promise<ActionResult> {
+export async function softDeleteCourse(id: string): Promise<ActionResult> {
   const authError = await requireAuth();
   if (authError) return authError;
 

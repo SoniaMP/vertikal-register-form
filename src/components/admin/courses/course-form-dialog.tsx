@@ -2,6 +2,7 @@
 
 import {
   startTransition,
+  SyntheticEvent,
   useActionState,
   useEffect,
   useState,
@@ -41,9 +42,7 @@ export function CourseFormDialog({
 }: Props) {
   const isEditing = !!course;
 
-  const action = isEditing
-    ? updateCourse.bind(null, course.id)
-    : createCourse;
+  const action = isEditing ? updateCourse.bind(null, course.id) : createCourse;
 
   const [state, formAction, isPending] = useActionState(action, INITIAL_STATE);
   const [description, setDescription] = useState(course?.description ?? "");
@@ -53,8 +52,10 @@ export function CourseFormDialog({
     if (state.success) onOpenChange(false);
   }, [state, onOpenChange]);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
+    const newData = new FormData(e.currentTarget);
+    console.log("Form data:", Object.fromEntries(newData.entries()));
     startTransition(() => formAction(new FormData(e.currentTarget)));
   }
 
@@ -79,7 +80,10 @@ export function CourseFormDialog({
             defaultValue={course?.description}
             onChange={setDescription}
           />
-          <CoursePriceList defaultPrices={course?.prices} onChange={setPrices} />
+          <CoursePriceList
+            defaultPrices={course?.prices}
+            onChange={setPrices}
+          />
           {state.error && (
             <p className="text-sm text-destructive">{state.error}</p>
           )}

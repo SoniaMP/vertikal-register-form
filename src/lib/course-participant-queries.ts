@@ -4,6 +4,7 @@ const PAGE_SIZE = 15;
 const MAX_EXPORT_ROWS = 5000;
 
 const VALID_SORT_FIELDS = [
+  "firstName",
   "lastName",
   "email",
   "phone",
@@ -110,6 +111,7 @@ function buildParticipantOrderBy(
   sortDir: "asc" | "desc",
 ) {
   const map: Record<ParticipantSortField, Record<string, unknown>> = {
+    firstName: { firstName: sortDir },
     lastName: { lastName: sortDir },
     email: { email: sortDir },
     phone: { phone: sortDir },

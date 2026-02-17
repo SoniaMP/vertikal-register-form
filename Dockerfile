@@ -33,8 +33,9 @@ ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
 ENV DATABASE_URL=${DATABASE_URL}
 
-# Generamos el cliente de Prisma
+# Generamos el cliente de Prisma y aplicamos migraciones
 RUN npx prisma generate
+RUN npx prisma migrate deploy
 
 # Construimos la aplicación Next.js
 RUN npm run build

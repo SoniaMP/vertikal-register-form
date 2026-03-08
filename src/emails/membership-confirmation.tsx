@@ -13,7 +13,10 @@ export default function MembershipConfirmation({
   branding,
 }: MembershipConfirmationProps) {
   return (
-    <EmailLayout preview={`Confirmación de inscripción — ${seasonName}`} branding={branding}>
+    <EmailLayout
+      preview={`Confirmación de inscripción — ${seasonName}`}
+      branding={branding}
+    >
       <Text className="text-lg text-gray-900">
         Hola {firstName} {lastName},
       </Text>
@@ -51,9 +54,6 @@ export default function MembershipConfirmation({
         </Row>
       </Section>
 
-      <Text className="text-gray-700 leading-6">
-        Si tienes alguna duda, no dudes en contactarnos.
-      </Text>
       <Text className="text-gray-700">¡Nos vemos en la montaña!</Text>
     </EmailLayout>
   );

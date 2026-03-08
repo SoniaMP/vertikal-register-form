@@ -73,6 +73,17 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 | `npm run db:reset` | Reset the database and re-run migrations |
 | `npm run db:studio` | Open Prisma Studio (visual DB browser) |
 | `npm run admin:create` | Create an admin user |
+| `npm run email:dev` | Start the email template preview server |
+
+## Email Templates (Local Preview)
+
+The project includes email templates built with [react-email](https://react.email). To preview them locally:
+
+```bash
+npm run email:dev
+```
+
+This starts a preview server at [http://localhost:3001](http://localhost:3001) where you can browse and test the templates with sample data. On first run it will prompt to install `@react-email/preview-server`.
 
 ## Stripe Webhooks (Local)
 

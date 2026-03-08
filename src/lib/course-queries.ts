@@ -119,14 +119,11 @@ export async function fetchPublicCourseList() {
 // ── Single course by slug (public) ──
 
 export async function fetchCourseBySlug(slug: string) {
-  const now = new Date();
-
   return prisma.courseCatalog.findFirst({
     where: {
       slug,
       deletedAt: null,
       isActive: true,
-      courseDate: { gte: now },
     },
     include: {
       courseType: { select: { id: true, name: true } },

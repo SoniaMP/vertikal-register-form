@@ -22,6 +22,6 @@ describe("Welcome", () => {
   it("renders club footer", async () => {
     const html = await render(Welcome(defaultProps));
     expect(html).toContain("Club Vertikal");
-    expect(html).toContain("Escalada y Montaña");
+    expect(html).toContain("info@clubvertikal.es");
   });
 });

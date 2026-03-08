@@ -76,13 +76,11 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ## Email Preview
 
-Email templates are built with `@react-email/components`. To preview them with real branding from the database, visit these routes while logged in as admin:
+Email templates are built with `@react-email/components`. To preview them with real branding from the database, log in as admin and visit:
 
-- `/api/email-preview/welcome`
-- `/api/email-preview/membership-confirmation`
-- `/api/email-preview/course-confirmation`
+[`/api/email-preview`](http://localhost:3000/api/email-preview) — index page with links to all available templates.
 
-These routes are protected and require an active admin session. Branding changes saved in **Admin > Ajustes** are reflected immediately.
+These routes are protected (requires admin session). Branding changes saved in **Admin > Ajustes** are reflected immediately. To add a new template to the preview, register it in `src/app/api/email-preview/templates.ts`.
 
 ## Stripe Webhooks (Local)
 

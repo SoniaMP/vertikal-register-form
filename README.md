@@ -25,14 +25,17 @@ npm install
 3. Copy the environment file and fill in your values:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
+
+> **Important:** Copy to `.env`, not `.env.local`. Prisma reads `.env` via `dotenv/config` and does not support `.env.local`.
 
 See [`.env.example`](.env.example) for all available variables. For local development, the defaults for `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_APP_NAME`, and `DATABASE_URL` work out of the box. You only need to set the Stripe and Resend keys if you want to test payments or emails.
 
-4. Set up the database:
+4. Generate the Prisma client and run migrations:
 
 ```bash
+npx prisma generate
 npx prisma migrate dev
 ```
 

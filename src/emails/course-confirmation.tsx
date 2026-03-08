@@ -9,9 +9,10 @@ export default function CourseConfirmation({
   courseTitle,
   coursePriceName,
   amountCents,
+  branding,
 }: CourseConfirmationProps) {
   return (
-    <EmailLayout preview={`Confirmación de curso — ${courseTitle}`}>
+    <EmailLayout preview={`Confirmación de curso — ${courseTitle}`} branding={branding}>
       <Text className="text-lg text-gray-900">
         Hola {firstName} {lastName},
       </Text>

@@ -2,9 +2,9 @@ import { Text } from "@react-email/components";
 import { EmailLayout } from "./_components/email-layout";
 import type { WelcomeProps } from "./types";
 
-export default function Welcome({ firstName, lastName }: WelcomeProps) {
+export default function Welcome({ firstName, lastName, branding }: WelcomeProps) {
   return (
-    <EmailLayout preview="Bienvenido/a a Club Vertikal">
+    <EmailLayout preview="Bienvenido/a a Club Vertikal" branding={branding}>
       <Text className="text-lg text-gray-900">
         Hola {firstName} {lastName},
       </Text>

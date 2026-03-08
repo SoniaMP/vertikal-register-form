@@ -1,4 +1,9 @@
+import type { EmailBrandingSettings } from "@/lib/email-branding";
+
+export type { EmailBrandingSettings };
+
 export type MembershipConfirmationProps = {
+  branding?: EmailBrandingSettings;
   firstName: string;
   lastName: string;
   email: string;
@@ -9,6 +14,7 @@ export type MembershipConfirmationProps = {
 };
 
 export type CourseConfirmationProps = {
+  branding?: EmailBrandingSettings;
   firstName: string;
   lastName: string;
   email: string;
@@ -18,6 +24,7 @@ export type CourseConfirmationProps = {
 };
 
 export type WelcomeProps = {
+  branding?: EmailBrandingSettings;
   firstName: string;
   lastName: string;
 };

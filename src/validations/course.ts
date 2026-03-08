@@ -63,6 +63,9 @@ export const courseRegistrationCheckoutSchema = personalDataSchema.extend({
   coursePriceId: z
     .string()
     .min(1, { message: "El precio es obligatorio" }),
+  licenseType: z
+    .string()
+    .min(1, { message: "El tipo de licencia es obligatorio" }),
   licenseFileUrl: z
     .string()
     .min(1, { message: "La licencia es obligatoria" }),

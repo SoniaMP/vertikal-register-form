@@ -300,6 +300,7 @@ model CourseRegistration {
   city                  String?
   postalCode            String?
   province              String?
+  licenseType           String?
   licenseFileUrl        String?
   paymentStatus         String   @default("PENDING")
   stripeSessionId       String?

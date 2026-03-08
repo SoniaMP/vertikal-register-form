@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       city: data.city,
       postalCode: data.postalCode,
       province: data.province,
+      licenseType: data.licenseType,
       licenseFileUrl: data.licenseFileUrl,
       paymentStatus: "PENDING",
     },

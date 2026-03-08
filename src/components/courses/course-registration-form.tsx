@@ -49,6 +49,7 @@ export function CourseRegistrationForm({
       province: "",
       courseCatalogId,
       coursePriceId: "",
+      licenseType: "",
       licenseFileUrl: "",
     },
   });

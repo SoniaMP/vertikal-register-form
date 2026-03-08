@@ -71,31 +71,64 @@ describe("confirmCourseCheckout", () => {
 describe("confirmMembershipCheckout", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("returns false when payment_status is not paid", async () => {
+  it("returns null when payment_status is not paid", async () => {
     mockSessionRetrieve.mockResolvedValue({
       payment_status: "unpaid",
       metadata: { membershipId: "ms-1" },
     });
 
-    expect(await confirmMembershipCheckout("cs_456")).toBe(false);
+    expect(await confirmMembershipCheckout("cs_456")).toBeNull();
     expect(mockMembershipUpdate).not.toHaveBeenCalled();
   });
 
-  it("updates membership and returns true on success", async () => {
+  it("updates membership and returns confirmation data on success", async () => {
     mockSessionRetrieve.mockResolvedValue({
       payment_status: "paid",
       metadata: { membershipId: "ms-1" },
       payment_intent: "pi_xyz",
     });
-    mockMembershipUpdate.mockResolvedValue({});
 
-    expect(await confirmMembershipCheckout("cs_456")).toBe(true);
+    const mockMember = {
+      firstName: "Juan",
+      lastName: "García",
+      email: "juan@test.com",
+      phone: "612345678",
+      dni: "12345678A",
+      dateOfBirth: "1990-01-15",
+      address: "Calle Mayor 1",
+      city: "Madrid",
+      postalCode: "28001",
+      province: "Madrid",
+    };
+
+    mockMembershipUpdate.mockResolvedValue({
+      member: mockMember,
+      licenseLabelSnapshot: "Competición - Nacional - Senior",
+      totalAmount: 15000,
+      supplements: [
+        { supplement: { name: "Seguro extra" } },
+      ],
+    });
+
+    const result = await confirmMembershipCheckout("cs_456");
+
+    expect(result).toEqual({
+      member: mockMember,
+      licenseLabel: "Competición - Nacional - Senior",
+      totalAmount: 15000,
+      supplements: [{ name: "Seguro extra" }],
+    });
+
     expect(mockMembershipUpdate).toHaveBeenCalledWith({
       where: { id: "ms-1" },
       data: {
         paymentStatus: "COMPLETED",
         status: "ACTIVE",
         stripePaymentId: "pi_xyz",
+      },
+      include: {
+        member: true,
+        supplements: { include: { supplement: true } },
       },
     });
   });

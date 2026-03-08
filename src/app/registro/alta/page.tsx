@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { getMembershipFee } from "@/lib/settings";
 import { fetchLicenseCatalog } from "@/lib/license-catalog";
 import { RegistrationWizard } from "@/components/registration/registration-wizard";
+import { RegistrationHeader } from "@/components/registration/registration-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -21,6 +22,7 @@ export default async function AltaPage() {
 
   return (
     <>
+      <RegistrationHeader />
       <Button variant="ghost" asChild className="mb-4">
         <Link href="/registro">
           <ArrowLeft className="mr-2 size-4" />

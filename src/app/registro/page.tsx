@@ -1,4 +1,5 @@
 import { RegistrationEntry } from "@/components/registration/registration-entry";
+import { RegistrationHeader } from "@/components/registration/registration-header";
 
 export const metadata = {
   title: "Registro - Club Vertikal",
@@ -6,5 +7,10 @@ export const metadata = {
 };
 
 export default function RegistroPage() {
-  return <RegistrationEntry />;
+  return (
+    <>
+      <RegistrationHeader />
+      <RegistrationEntry />
+    </>
+  );
 }

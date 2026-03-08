@@ -30,17 +30,35 @@ export async function confirmCourseCheckout(
   return true;
 }
 
+export type MembershipConfirmation = {
+  member: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    dni: string;
+    dateOfBirth: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    province: string;
+  };
+  licenseLabel: string;
+  totalAmount: number;
+  supplements: { name: string }[];
+};
+
 export async function confirmMembershipCheckout(
   sessionId: string,
-): Promise<boolean> {
+): Promise<MembershipConfirmation | null> {
   const session = await getStripe().checkout.sessions.retrieve(sessionId);
 
-  if (session.payment_status !== "paid") return false;
+  if (session.payment_status !== "paid") return null;
 
   const membershipId = session.metadata?.membershipId;
-  if (!membershipId) return false;
+  if (!membershipId) return null;
 
-  await prisma.membership.update({
+  const membership = await prisma.membership.update({
     where: { id: membershipId },
     data: {
       paymentStatus: "COMPLETED",
@@ -50,7 +68,18 @@ export async function confirmMembershipCheckout(
           ? session.payment_intent
           : null,
     },
+    include: {
+      member: true,
+      supplements: { include: { supplement: true } },
+    },
   });
 
-  return true;
+  return {
+    member: membership.member,
+    licenseLabel: membership.licenseLabelSnapshot,
+    totalAmount: membership.totalAmount,
+    supplements: membership.supplements.map((s) => ({
+      name: s.supplement.name,
+    })),
+  };
 }

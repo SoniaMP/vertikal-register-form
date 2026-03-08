@@ -83,7 +83,7 @@ export async function fetchSeasonMetrics(
     totalMembers: total,
     byStatus,
     byPaymentStatus,
-    totalRevenue: revenue._sum.totalAmount ?? 0,
+    totalRevenue: (revenue._sum.totalAmount ?? 0) / 100,
     federatedCount: federated,
   };
 }

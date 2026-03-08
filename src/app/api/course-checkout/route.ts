@@ -48,32 +48,42 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const registration = await prisma.courseRegistration.create({
-    data: {
-      courseCatalogId: course.id,
-      coursePriceId: price.id,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      phone: data.phone ?? null,
-      dni: data.dni,
-      dateOfBirth: data.dateOfBirth,
-      address: data.address,
-      city: data.city,
-      postalCode: data.postalCode,
-      province: data.province,
-      licenseType: data.licenseType,
-      licenseFileUrl: data.licenseFileUrl,
-      paymentStatus: "PENDING",
-    },
-  });
+  let registration;
+  try {
+    registration = await prisma.courseRegistration.create({
+      data: {
+        courseCatalogId: course.id,
+        coursePriceId: price.id,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone ?? null,
+        dni: data.dni,
+        dateOfBirth: data.dateOfBirth,
+        address: data.address,
+        city: data.city,
+        postalCode: data.postalCode,
+        province: data.province,
+        licenseType: data.licenseType,
+        licenseFileUrl: data.licenseFileUrl,
+        paymentStatus: "PENDING",
+      },
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Error al crear la inscripción";
+    console.error("Course registration create error:", message);
+    return NextResponse.json(
+      { error: "Error al crear la inscripción" },
+      { status: 500 },
+    );
+  }
 
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL ?? new URL(request.url).origin;
 
-  const stripe = getStripe();
-
   try {
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
